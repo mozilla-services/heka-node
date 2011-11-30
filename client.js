@@ -64,7 +64,7 @@ client.prototype.metlog = function(type, opts) {
     if (opts.payload === undefined) opts.payload = '';
     if (opts.fields === undefined) opts.fields = {};
     if (opts.timestamp instanceof Date) {
-        opts.timestamp = ISODateString(optstimestamp);
+        opts.timestamp = ISODateString(opts.timestamp);
     };
     var fullMsg = {'type': type, 'timestamp': opts.timestamp,
                    'logger': opts.logger, 'severity': opts.severity,
@@ -88,14 +88,15 @@ client.prototype.timed = function(elapsed, name, opts) {
     if (opts === undefined) opts = {};
     if (opts.fields === undefined) opts.fields = {};
     if (opts.rate === undefined) opts.rate = 1;
-    fields['name'] = name;
-    fields['rate'] = opts.rate;
+    opts.fields['name'] = name;
+    opts.fields['rate'] = opts.rate;
     opts.payload = String(elapsed);
     this.metlog('timer', opts);
 };
 
-client.prototype.timer = function(fn, name, timestamp, logger, severity,
-                                  fields, rate) {
+client.prototype.timer = function(fn, name, opts) {
+    // opts = timestamp, logger, severity, fields, rate
+    if (opts === undefined) opts = {};
     var currentClient = this;
     return function() {
         var startTime = new Date().getTime();
@@ -103,8 +104,7 @@ client.prototype.timer = function(fn, name, timestamp, logger, severity,
         var retVal = fn.apply(this, arguments);
         var endTime = new Date().getTime();
         var timeElapsed = endTime - startTime;
-        currentClient.timed(elapsed, name, timestamp, logger, severity,
-                            fields);
+        currentClient.timed(elapsed, name, opts);
         return retVal;
     };
 };

@@ -28,6 +28,16 @@ describe('client', function() {
 
     it('deliversToSender', function() {
         var timestamp = new Date();
-        //client.metlog('type');
+        var type = 'vanilla'
+        var payload = 'drippy dreamy icy creamy';
+        client.metlog(type, {'timestamp': timestamp,
+                             'payload': payload});
+        expect(mockSender.sent).toEqual(1);
+        var msg = mockSender.msg;
+        expect(msg.type).toEqual(type);
+        expect(msg.logger).toEqual(loggerVal);
+        expect(msg.severity).toEqual(6);
+        expect(msg.payload).toEqual(payload);
+        expect(msg.fields).toEqual({});
     });
 });

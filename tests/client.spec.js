@@ -21,6 +21,15 @@ describe('client', function() {
         client = new clientModule.client(mockSender, loggerVal);
     });
 
+    function block(ms) {
+        // naive cpu consuming "sleep", should never be used in real code
+        var start = new Date();
+        var now;
+        do {
+            now = new Date();
+        } while (now - start < ms);
+    };
+
     it('initializes correctly', function() {
         expect(client.sender).toBe(mockSender);
         expect(client.logger).toEqual(loggerVal);
@@ -90,6 +99,7 @@ describe('client', function() {
         var diffLogger = 'different'
         client.timed(elapsed, name, {'timestamp': timestamp,
                                      'logger': diffLogger});
+        expect(mockSender.sent).toEqual(1);
         var msg = mockSender.msg;
         expect(msg.type).toEqual('timer');
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
@@ -98,5 +108,41 @@ describe('client', function() {
         expect(msg.fields).toEqual({'name': name,
                                     'rate': 1});
         expect(msg.payload).toEqual(String(elapsed));
+    });
+
+    it('decorates w timer correctly', function() {
+        var minWait = 40;  // in milliseconds
+        var sleeper = function() {
+            block(minWait);
+        };
+        var name = 'decorator';
+        var timestamp = new Date();
+        var diffSeverity = 4;
+        // wrap it
+        sleeper = client.timer(sleeper, name, {'timestamp': timestamp,
+                                               'severity': diffSeverity,});
+        // call it
+        sleeper();
+        expect(mockSender.sent).toEqual(1);
+        var msg = mockSender.msg;
+        expect(msg.type).toEqual('timer');
+        expect(msg.timestamp).toEqual(isoConvert(timestamp));
+        expect(msg.logger).toEqual(loggerVal);
+        expect(msg.severity).toEqual(diffSeverity);
+        expect(msg.fields).toEqual({'name': name,
+                                    'rate': 1});
+        var elapsed = parseInt(msg.payload);
+        expect(elapsed >= minWait).toBeTruthy();
+        // call it again
+        sleeper();
+        expect(mockSender.sent).toEqual(2);
+        var msg = mockSender.msg;
+        expect(msg.type).toEqual('timer');
+        expect(msg.timestamp).toEqual(isoConvert(timestamp));
+        expect(msg.logger).toEqual(loggerVal);
+        expect(msg.severity).toEqual(diffSeverity);
+        expect(msg.fields).toEqual({'name': name,
+                                    'rate': 1});
+        expect(elapsed >= minWait).toBeTruthy();
     });
 });

@@ -78,7 +78,7 @@ client.prototype.incr = function(name, opts) {
     if (opts === undefined) opts = {};
     if (opts.count === undefined) opts.count = 1;
     if (opts.fields === undefined) opts.fields = {};
-    var payload = String(count);
+    opts.payload = String(opts.count);
     opts.fields['name'] = name;
     this.metlog('counter', opts);
 };

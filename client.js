@@ -39,7 +39,7 @@
 
 var env_version = '0.8';
 
-function ISODateString(d) {
+function IsoDateString(d) {
     function pad(n) {return n<10 ? '0'+n : n};
     return d.getUTCFullYear() + '-'
         + pad(d.getUTCMonth() + 1) + '-'
@@ -64,7 +64,7 @@ client.prototype.metlog = function(type, opts) {
     if (opts.payload === undefined) opts.payload = '';
     if (opts.fields === undefined) opts.fields = {};
     if (opts.timestamp instanceof Date) {
-        opts.timestamp = ISODateString(opts.timestamp);
+        opts.timestamp = IsoDateString(opts.timestamp);
     };
     var fullMsg = {'type': type, 'timestamp': opts.timestamp,
                    'logger': opts.logger, 'severity': opts.severity,
@@ -109,4 +109,5 @@ client.prototype.timer = function(fn, name, opts) {
     };
 };
 
+exports.IsoDateString = IsoDateString;
 exports.client = client;

@@ -103,7 +103,7 @@ client.prototype.timer = function(fn, name, opts) {
         // might this yield at the function call boundaries?
         var retVal = fn.apply(this, arguments);
         var endTime = new Date().getTime();
-        var timeElapsed = endTime - startTime;
+        var elapsed = endTime - startTime;
         currentClient.timed(elapsed, name, opts);
         return retVal;
     };

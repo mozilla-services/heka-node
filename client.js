@@ -35,7 +35,7 @@
  *
  ***** END LICENSE BLOCK *****
  */
-
+"use strict"
 
 var env_version = '0.8';
 

@@ -149,6 +149,20 @@ describe('client', function() {
         expect(msg.payload).toEqual(String(elapsed));
     });
 
+    it('honors timer rate', function() {
+        var timestamp = new Date();
+        var name = 'timed name';
+        var elapsed = 35;
+        var rate = 0.01;
+        var repeats = 10;
+        for (var i=0; i < repeats; i++) {
+            client.timed(elapsed, name, {'timestamp': timestamp,
+                                         'rate': rate});
+        };
+        // this is a very weak test, w/ a small probability of failing incorrectly :(
+        expect(mockSender.sent).toBeLessThan(repeats);
+    });
+
     it('decorates w timer correctly', function() {
         var minWait = 40;  // in milliseconds
         var sleeper = function() {

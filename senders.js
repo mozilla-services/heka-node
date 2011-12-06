@@ -45,7 +45,7 @@ var zmqPubSender = function(bindstrs, queueLength) {
     queueLength = typeof(queueLength) != 'undefined' ? queueLength : 1000;
     var publisher = this.zmq.createSocket('pub');
     publisher['highWaterMark'] = queueLength;
-    for (i = 0; i < bindstrs.length; i++) {
+    for (var i = 0; i < bindstrs.length; i++) {
         publisher.bind(bindstrs[i]);
     };
     this.publisher = publisher;

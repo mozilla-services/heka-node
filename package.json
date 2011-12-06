@@ -13,8 +13,8 @@
         "node": ">=0.4.7"
     },
     "dependencies": {"zmq": ">=1.0.3"},
-    "devDependencies": {"jasmine-node": ">=1.0.13"},
-    "scripts": {
-        "test": "npm install jasmine-node && jasmine-node tests"
+    "devDependencies": {
+        "jasmine-node": ">=1.0.13",
+        "horaa": ">=0.1.1alpha"
     }
 }

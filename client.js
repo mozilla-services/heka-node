@@ -85,9 +85,13 @@ client.prototype.incr = function(name, opts) {
 
 client.prototype.timed = function(elapsed, name, opts) {
     // opts = timestamp, logger, severity, fields, rate
+    if (opts.rate === undefined) opts.rate = 1;
+    if (opts.rate < 1 && Math.random(1) >= opts.rate) {
+        // do nothing
+        return;
+    };
     if (opts === undefined) opts = {};
     if (opts.fields === undefined) opts.fields = {};
-    if (opts.rate === undefined) opts.rate = 1;
     opts.fields['name'] = name;
     opts.fields['rate'] = opts.rate;
     opts.payload = String(elapsed);

@@ -38,7 +38,7 @@
 "use strict";
 
 var sys = require('util');
-var clientModule = require('../client.js');
+var module = require('../client.js');
 
 
 describe('client', function() {
@@ -52,12 +52,12 @@ describe('client', function() {
 
     var loggerVal = 'bogus';
     var client;
-    var isoConvert = clientModule.IsoDateString
+    var isoConvert = module.IsoDateString
 
     beforeEach(function() {
         mockSender.sent = 0;
         mockSender.msg = '';
-        client = new clientModule.client(mockSender, loggerVal);
+        client = new module.client(mockSender, loggerVal);
     });
 
     function block(ms) {
@@ -78,8 +78,8 @@ describe('client', function() {
     it('initializes w alternate defaults', function() {
         var otherLoggerVal = 'sugob';
         var otherSeverity = 3;
-        otherClient = new clientModule.client(mockSender, otherLoggerVal,
-                                              otherSeverity);
+        var otherClient = new module.client(mockSender, otherLoggerVal,
+                                            otherSeverity);
         expect(otherClient.sender).toBe(mockSender);
         expect(otherClient.logger).toEqual(otherLoggerVal);
         expect(otherClient.severity).toEqual(otherSeverity);

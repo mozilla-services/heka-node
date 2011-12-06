@@ -46,7 +46,7 @@ describe('client', function() {
         sent: 0,
         sendMessage: function(msg) {
             this.sent += 1;
-            this.msg = msg
+            this.msg = msg;
         }
     };
 

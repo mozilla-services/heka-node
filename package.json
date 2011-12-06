@@ -2,7 +2,7 @@
     "author": "Rob Miller <rmiller@mozilla.com>",
     "name": "metlog",
     "description": "Metrics logging",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "homepage": "https://github.com/mozilla-services/metlog.js",
     "repository": {
         "type": "git",

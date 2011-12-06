@@ -37,15 +37,13 @@
  */
 "use strict";
 
-zmq = require('zmq');
-
-
 var zmqPubSender = function(bindstrs, queueLength) {
     if (typeof(bindstrs) == "string") {
         bindstrs = [bindstrs];
     };
+    this.zmq = require('zmq');
     queueLength = typeof(queueLength) != 'undefined' ? queueLength : 1000;
-    var publisher = zmq.createSocket('pub');
+    var publisher = this.zmq.createSocket('pub');
     publisher['highWaterMark'] = queueLength;
     for (i = 0; i < bindstrs.length; i++) {
         publisher.bind(bindstrs[i]);

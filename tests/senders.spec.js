@@ -121,4 +121,14 @@ describe('StdoutSender', function() {
         expect(msgs.length).toEqual(1);
         expect(msgs[0]).toEqual(JSON.stringify(testMsg) + '\n');
     });
+
+    it('supports alternate formatters', function() {
+        var newFormatter = function(msg) {
+            return ':::' + JSON.stringify(msg) + ':::';
+        };
+        var sender = new senders.StdoutSender(newFormatter);
+        sender.sendMessage(testMsg);
+        expect(msgs.length).toEqual(1);
+        expect(msgs[0]).toEqual(newFormatter(testMsg) + '\n');
+    });
 });

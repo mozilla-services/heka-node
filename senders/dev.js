@@ -15,46 +15,50 @@
  */
 var fs = require('fs');
 
-var StdoutSender = function(formatter) {
-    this.stream = process.stdout;
-    this.init(formatter);
-};
-
-var FileSender = function(filePath, formatter) {
-    this.stream = fs.createWriteStream(filePath);
-    this.init(formatter);
-};
-
-var init = function(formatter) {
-    if (typeof(formatter) === 'function') {
-        this.formatter = formatter;
-    } else {
-        this.formatter = defaultFormatter;
-    };
-};
 
 var defaultFormatter = function(msg) {
     return JSON.stringify(msg);
 };
 
-var sendMessage = function(msg) {
-    output = this.formatter(msg);
-    this.stream.write(output + '\n');
+
+var asStreamSender = function() {
+    this.init = function(formatter) {
+        if (typeof(formatter) === 'function') {
+            this.formatter = formatter;
+        } else {
+            this.formatter = defaultFormatter;
+        };
+    };
+
+    this.sendMessage = function(msg) {
+        output = this.formatter(msg);
+        this.stream.write(output + '\n');
+    };
+
 };
 
-StdoutSender.prototype.init = init;
-StdoutSender.prototype.sendMessage = sendMessage;
 
-FileSender.prototype.init = init;
-FileSender.prototype.sendMessage = sendMessage;
+var StdoutSender = function(formatter) {
+    this.stream = process.stdout;
+    this.init(formatter);
+};
+asStreamSender.call(StdoutSender.prototype);
 
 var stdoutSenderFactory = function(formatter) {
     return new StdoutSender(formatter);
 };
 
+
+var FileSender = function(filePath, formatter) {
+    this.stream = fs.createWriteStream(filePath);
+    this.init(formatter);
+};
+asStreamSender.call(FileSender.prototype)
+
 var fileSenderFactory = function(filePath, formatter) {
     return new FileSender(filePath, formatter);
 };
+
 
 exports.StdoutSender = StdoutSender;
 exports.stdoutSenderFactory = stdoutSenderFactory;

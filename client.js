@@ -26,14 +26,28 @@ function IsoDateString(d) {
         + pad(d.getUTCMinutes()) + ':'
         + pad(d.getUTCSeconds()) + 'Z'}
 
-// constructor that accepts the required attributes
-var client = function(sender, logger, severity) {
+var MetlogClient = function(sender, logger, severity, disabled_timers, filters) {
+    // metlog client constructor
     this.sender = sender;
     this.logger = typeof(logger) != 'undefined' ? logger : '';
     this.severity = typeof(severity) != 'undefined' ? severity : 6;
+    this.disabled_timers = typeof(disabled_timers) != 'undefined' ? disabled_timers : [];
+    this.filters = typeof(filters) != 'undefined' ? filters : [];
+    this._dynamicMethods = {};
 };
 
-client.prototype.metlog = function(type, opts) {
+MetlogClient.prototype.sendMessage = function(msg) {
+    // Apply any filters and pass on the sender if message gets through
+    for (var i=0; i<this.filters.length; i++) {
+        var filter = this.filters[i];
+        if (!filter.fn(this, filter.config, msg)) {
+            return;
+        };
+    };
+    this.sender.sendMessage(msg);
+};
+
+MetlogClient.prototype.metlog = function(type, opts) {
     // opts = timestamp, logger, severity, payload, fields
     if (opts === undefined) opts = {};
     if (opts.timestamp === undefined) opts.timestamp = new Date();
@@ -48,10 +62,21 @@ client.prototype.metlog = function(type, opts) {
                    'logger': opts.logger, 'severity': opts.severity,
                    'payload': opts.payload, 'fields': opts.fields,
                    'env_version': env_version};
-    this.sender.sendMessage(fullMsg);
+    this.sendMessage(fullMsg);
 };
 
-client.prototype.incr = function(name, opts) {
+MetlogClient.prototype.addMethod = function(name, method) {
+    if (typeof(method) !== 'function') {
+        throw new Error('`method` argument must be a function');
+    };
+    if (name in this) {
+        throw new Error('The name ' + name + ' is already in use');
+    };
+    this._dynamicMethods[name] = method;
+    this[name] = method;
+};
+
+MetlogClient.prototype.incr = function(name, opts) {
     // opts = count, timestamp, logger, severity, fields
     if (opts === undefined) opts = {};
     if (opts.count === undefined) opts.count = 1;
@@ -61,7 +86,7 @@ client.prototype.incr = function(name, opts) {
     this.metlog('counter', opts);
 };
 
-client.prototype.timed = function(elapsed, name, opts) {
+MetlogClient.prototype.timed = function(elapsed, name, opts) {
     // opts = timestamp, logger, severity, fields, rate
     if (opts.rate === undefined) opts.rate = 1;
     if (opts.rate < 1 && Math.random(1) >= opts.rate) {
@@ -76,7 +101,7 @@ client.prototype.timed = function(elapsed, name, opts) {
     this.metlog('timer', opts);
 };
 
-client.prototype.timer = function(fn, name, opts) {
+MetlogClient.prototype.timer = function(fn, name, opts) {
     // opts = timestamp, logger, severity, fields, rate
     if (opts === undefined) opts = {};
     var currentClient = this;
@@ -92,4 +117,4 @@ client.prototype.timer = function(fn, name, opts) {
 };
 
 exports.IsoDateString = IsoDateString;
-exports.client = client;
+exports.MetlogClient = MetlogClient;

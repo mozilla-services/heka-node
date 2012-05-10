@@ -22,9 +22,10 @@ var module = require('../client.js');
 describe('client', function() {
     var mockSender = {
         sent: 0,
+        msgs: [],
         sendMessage: function(msg) {
             this.sent += 1;
-            this.msg = msg;
+            this.msgs.push(msg);
         }
     };
 
@@ -34,8 +35,8 @@ describe('client', function() {
 
     beforeEach(function() {
         mockSender.sent = 0;
-        mockSender.msg = '';
-        client = new module.client(mockSender, loggerVal);
+        mockSender.msgs = [];
+        client = new module.MetlogClient(mockSender, loggerVal);
     });
 
     function block(ms) {
@@ -47,6 +48,14 @@ describe('client', function() {
         } while (now - start < ms);
     };
 
+    function typeFilter(client, config, msg) {
+        // config should be an object w/ a `types` property
+        if (msg.type in config.types) {
+            return false;
+        };
+        return true;
+    };
+
     it('initializes correctly', function() {
         expect(client.sender).toBe(mockSender);
         expect(client.logger).toEqual(loggerVal);
@@ -56,7 +65,7 @@ describe('client', function() {
     it('initializes w alternate defaults', function() {
         var otherLoggerVal = 'sugob';
         var otherSeverity = 3;
-        var otherClient = new module.client(mockSender, otherLoggerVal,
+        var otherClient = new module.MetlogClient(mockSender, otherLoggerVal,
                                             otherSeverity);
         expect(otherClient.sender).toBe(mockSender);
         expect(otherClient.logger).toEqual(otherLoggerVal);
@@ -70,7 +79,7 @@ describe('client', function() {
         client.metlog(type, {'timestamp': timestamp,
                              'payload': payload});
         expect(mockSender.sent).toEqual(1);
-        var msg = mockSender.msg;
+        var msg = mockSender.msgs[mockSender.msgs.length - 1];
         expect(msg.type).toEqual(type);
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(loggerVal);
@@ -84,7 +93,7 @@ describe('client', function() {
         var name = 'counter name';
         client.incr(name, {'timestamp': timestamp});
         expect(mockSender.sent).toEqual(1)
-        var msg = mockSender.msg;
+        var msg = mockSender.msgs[mockSender.msgs.length - 1];
         expect(msg.type).toEqual('counter');
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(loggerVal);
@@ -100,7 +109,7 @@ describe('client', function() {
         client.incr(name, {'timestamp': timestamp,
                            'count': count});
         expect(mockSender.sent).toEqual(1)
-        var msg = mockSender.msg;
+        var msg = mockSender.msgs[mockSender.msgs.length - 1];
         expect(msg.type).toEqual('counter');
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(loggerVal);
@@ -117,7 +126,7 @@ describe('client', function() {
         client.timed(elapsed, name, {'timestamp': timestamp,
                                      'logger': diffLogger});
         expect(mockSender.sent).toEqual(1);
-        var msg = mockSender.msg;
+        var msg = mockSender.msgs[mockSender.msgs.length - 1];
         expect(msg.type).toEqual('timer');
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(diffLogger);
@@ -155,7 +164,7 @@ describe('client', function() {
         // call it
         sleeper();
         expect(mockSender.sent).toEqual(1);
-        var msg = mockSender.msg;
+        var msg = mockSender.msgs[mockSender.msgs.length - 1];
         expect(msg.type).toEqual('timer');
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(loggerVal);
@@ -167,7 +176,7 @@ describe('client', function() {
         // call it again
         sleeper();
         expect(mockSender.sent).toEqual(2);
-        var msg = mockSender.msg;
+        var msg = mockSender.msgs[mockSender.msgs.length - 1];
         expect(msg.type).toEqual('timer');
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(loggerVal);
@@ -175,5 +184,29 @@ describe('client', function() {
         expect(msg.fields).toEqual({'name': name,
                                     'rate': 1});
         expect(elapsed >= minWait).toBeTruthy();
+    });
+
+    it('supports filter functions', function() {
+        var origFilters = client.filters;
+        client.filters = [{'fn': typeFilter, 'config': {'types': {'foo':0, 'bar':0}}}]
+        client.metlog('foo');
+        client.metlog('baz');
+        client.metlog('bar');
+        client.metlog('bawlp');
+        expect(mockSender.sent).toEqual(2)
+        expect(mockSender.msgs[0].type).toEqual('baz');
+        expect(mockSender.msgs[1].type).toEqual('bawlp');
+    });
+
+    it('supports dyamic methods', function() {
+        var sendFoo = function(msg) {
+            this.metlog('foo', {'payload': 'FOO: ' + msg});
+        };
+        client.addMethod('sendFoo', sendFoo);
+        expect(client._dynamicMethods).toEqual({'sendFoo': sendFoo});
+        client.sendFoo('bar');
+        expect(mockSender.sent).toEqual(1);
+        expect(mockSender.msgs[0].type).toEqual('foo');
+        expect(mockSender.msgs[0].payload).toEqual('FOO: bar');
     });
 });

@@ -32,7 +32,7 @@ var typeBlacklist = function(client, config, msg) {
 
 
 var typeWhitelist = function(client, config, msg) {
-    if (! msg['type'] in config['types']) {
+    if (!(msg['type'] in config['types'])) {
         return false;
     };
     return true;

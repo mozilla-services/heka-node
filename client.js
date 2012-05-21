@@ -26,12 +26,17 @@ function IsoDateString(d) {
         + pad(d.getUTCMinutes()) + ':'
         + pad(d.getUTCSeconds()) + 'Z'}
 
-var MetlogClient = function(sender, logger, severity, disabled_timers, filters) {
+var MetlogClient = function(sender, logger, severity, disabledTimers, filters) {
     // metlog client constructor
+    this.setup(sender, logger, severity, disabledTimers, filters);
+};
+
+MetlogClient.prototype.setup = function(sender, logger, severity, disabledTimers,
+                                        filters) {
     this.sender = sender;
     this.logger = typeof(logger) != 'undefined' ? logger : '';
     this.severity = typeof(severity) != 'undefined' ? severity : 6;
-    this.disabled_timers = typeof(disabled_timers) != 'undefined' ? disabled_timers : [];
+    this.disabledTimers = typeof(disabledTimers) != 'undefined' ? disabledTimers : [];
     this.filters = typeof(filters) != 'undefined' ? filters : [];
     this._dynamicMethods = {};
 };

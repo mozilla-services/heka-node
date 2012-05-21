@@ -98,7 +98,7 @@ describe('config', function() {
         };
         var jsonConfig = JSON.stringify(config1);
         var client = configModule.clientFromJsonConfig(jsonConfig);
-        expect(configModule.globalConfig).toEqual(globalParam1);
+        expect(configModule.getGlobalConfig()).toEqual(globalParam1);
 
         var globalParam2 = {'another': 'globalsetting'};
         var config2 = {
@@ -109,10 +109,10 @@ describe('config', function() {
         jsonConfig = JSON.stringify(config2)
         client = configModule.clientFromJsonConfig(jsonConfig, client);
         var expected = mergeObjects([globalParam1, globalParam2]);
-        expect(configModule.globalConfig).toEqual(expected);
+        expect(configModule.getGlobalConfig()).toEqual(expected);
 
         client = configModule.clientFromJsonConfig(jsonConfig, client, true);
-        expect(configModule.globalConfig).toEqual(globalParam2);
+        expect(configModule.getGlobalConfig()).toEqual(globalParam2);
     });
 });
 

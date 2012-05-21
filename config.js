@@ -41,6 +41,10 @@ var resolveName = function(name) {
 };
 
 
+var getGlobalConfig = function() {
+    return globalConfig;
+};
+
 var senderFromConfig = function(config) {
     // TODO: enforce check for `factory` value
     var senderFactory = resolveName(config.factory);
@@ -93,6 +97,6 @@ var clientFromJsonConfig = function(config, client, clearGlobal) {
     return client;
 };
 
-exports.globalConfig = globalConfig;
+exports.getGlobalConfig = getGlobalConfig;
 exports.resolveName = resolveName;
 exports.clientFromJsonConfig = clientFromJsonConfig;

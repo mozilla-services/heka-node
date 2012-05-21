@@ -111,7 +111,6 @@ describe('config', function() {
         var expected = mergeObjects([globalParam1, globalParam2]);
         expect(configModule.globalConfig).toEqual(expected);
 
-        debugger;
         client = configModule.clientFromJsonConfig(jsonConfig, client, true);
         expect(configModule.globalConfig).toEqual(globalParam2);
     });

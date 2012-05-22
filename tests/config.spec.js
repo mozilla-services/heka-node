@@ -44,6 +44,16 @@ var payloadIsFilter = function(client, config, msg) {
     return true;
 };
 var payloadIsFilterString = './tests/config.spec:payloadIsFilter';
+
+var showLoggerProvider = function(pluginConfig) {
+    var label = pluginConfig.label !== undefined ? pluginConfig.label : 'logger';
+    var showLogger = function() {
+        return label + ': ' + this.logger;
+    };
+    return showLogger
+};
+var showLoggerProviderString = './tests/config.spec:showLoggerProvider'
+
 describe('config', function() {
 
     beforeEach(function() {
@@ -141,7 +151,21 @@ describe('config', function() {
         expect(client.sender.msgs[0].payload).toEqual('aye');
     });
 
+    it('sets up plugins', function() {
+        var customLabel = 'LOGGER, YO'
+        var config = {
+            'sender': {'factory': makeMockSenderString},
+            'logger': 'test',
+            'plugins': {'showLogger': {'provider': showLoggerProviderString,
+                                       'label': customLabel}}
+        };
+        var jsonConfig = JSON.stringify(config);
+        var client = configModule.clientFromJsonConfig(jsonConfig);
+        expect(client._dynamicMethods['showLogger']).not.toBe(undefined);
+        expect(client.showLogger()).toEqual(customLabel+': '+'test');
+    });
 });
 
 exports.makeMockSender = makeMockSender;
 exports.payloadIsFilter = payloadIsFilter;
+exports.showLoggerProvider = showLoggerProvider;

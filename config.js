@@ -91,10 +91,10 @@ var clientFromJsonConfig = function(config, client, clearGlobal) {
 
     for (var name in plugins) {
         if (plugins.hasOwnProperty(name)) {
-            var pluginConfig = plugin[name];
-            var provider = pluginConfig.provider;
+            var pluginConfig = plugins[name];
+            var provider = resolveName(pluginConfig.provider);
             var pluginMethod = provider(pluginConfig);
-            client.addMethod(name, pluginFn);
+            client.addMethod(name, pluginMethod);
         };
     };
 

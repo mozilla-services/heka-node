@@ -37,6 +37,13 @@ var makeMockSender = function(senderConfig) {
 };
 var makeMockSenderString = './tests/config.spec:makeMockSender';
 
+var payloadIsFilter = function(client, config, msg) {
+    if (config.payload === msg.payload) {
+        return false;
+    };
+    return true;
+};
+var payloadIsFilterString = './tests/config.spec:payloadIsFilter';
 describe('config', function() {
 
     beforeEach(function() {
@@ -114,6 +121,27 @@ describe('config', function() {
         client = configModule.clientFromJsonConfig(jsonConfig, client, true);
         expect(configModule.getGlobalConfig()).toEqual(globalParam2);
     });
+
+    it('sets up filters', function() {
+        var filterConfig = {'payload': 'nay!'};
+        var config = {
+            'sender': {'factory': makeMockSenderString},
+            'logger': 'test',
+            'filters': [[payloadIsFilterString, filterConfig]]
+        };
+        var jsonConfig = JSON.stringify(config);
+        var client = configModule.clientFromJsonConfig(jsonConfig);
+        var filters = client.filters;
+        expect(filters.length).toEqual(1);
+        expect(filters[0].fn).toBe(payloadIsFilter);
+        expect(filters[0].config).toEqual(filterConfig);
+        client.metlog('test', {'payload': 'aye'});
+        client.metlog('test', {'payload': 'nay!'});
+        expect(client.sender.msgs.length).toEqual(1);
+        expect(client.sender.msgs[0].payload).toEqual('aye');
+    });
+
 });
 
 exports.makeMockSender = makeMockSender;
+exports.payloadIsFilter = payloadIsFilter;

@@ -75,7 +75,11 @@ var clientFromJsonConfig = function(config, client, clearGlobal) {
     var filters = [];
     for (var i=0; i<filterNames.length; i++) {
         var fn = resolveName(filterNames[i][0]);
-        filters.push([fn, resolveName(filternames[i][1])]);
+        var filterSpec = {
+            'fn': fn,
+            'config': filterNames[i][1]
+        };
+        filters.push(filterSpec);
     };
 
     if (typeof(client) === 'undefined') {

@@ -70,11 +70,11 @@ MetlogClient.prototype.metlog = function(type, opts) {
     this.sendMessage(fullMsg);
 };
 
-MetlogClient.prototype.addMethod = function(name, method) {
+MetlogClient.prototype.addMethod = function(name, method, override) {
     if (typeof(method) !== 'function') {
         throw new Error('`method` argument must be a function');
     };
-    if (name in this) {
+    if (!override && name in this) {
         throw new Error('The name ' + name + ' is already in use');
     };
     this._dynamicMethods[name] = method;

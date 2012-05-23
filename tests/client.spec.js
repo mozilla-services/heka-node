@@ -209,4 +209,19 @@ describe('client', function() {
         expect(mockSender.msgs[0].type).toEqual('foo');
         expect(mockSender.msgs[0].payload).toEqual('FOO: bar');
     });
+
+    it('overrides properties correctly', function() {
+        var sendFoo = function(msg) {
+            this.metlog('foo', {'payload': 'FOO: ' + msg});
+        };
+        expect(function() {
+            client.addMethod('incr', sendFoo)
+        }).toThrow(new Error('The name incr is already in use'));
+
+        client.addMethod('incr', sendFoo, true);
+        client.incr('bar');
+        expect(mockSender.sent).toEqual(1);
+        expect(mockSender.msgs[0].type).toEqual('foo');
+        expect(mockSender.msgs[0].payload).toEqual('FOO: bar');
+    });
 });

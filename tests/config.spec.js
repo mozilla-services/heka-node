@@ -164,6 +164,25 @@ describe('config', function() {
         expect(client._dynamicMethods['showLogger']).not.toBe(undefined);
         expect(client.showLogger()).toEqual(customLabel+': '+'test');
     });
+
+    it('honors plugin `override` settings', function() {
+        var customLabel = 'LOGGER, YO'
+        var config = {
+            'sender': {'factory': makeMockSenderString},
+            'logger': 'test',
+            'plugins': {'incr': {'provider': showLoggerProviderString,
+                                 'label': customLabel}}
+        };
+        var jsonConfig = JSON.stringify(config);
+        expect(function() {
+            configModule.clientFromJsonConfig(jsonConfig);
+        }).toThrow(new Error('The name incr is already in use'));
+        config.plugins.incr.override = true;
+        jsonConfig = JSON.stringify(config);
+        var client = configModule.clientFromJsonConfig(jsonConfig);
+        expect(client._dynamicMethods['incr']).not.toBe(undefined);
+        expect(client.incr()).toEqual(customLabel+': '+'test');
+    });
 });
 
 exports.makeMockSender = makeMockSender;

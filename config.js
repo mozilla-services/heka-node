@@ -94,7 +94,7 @@ var clientFromJsonConfig = function(config, client, clearGlobal) {
             var pluginConfig = plugins[name];
             var provider = resolveName(pluginConfig.provider);
             var pluginMethod = provider(pluginConfig);
-            client.addMethod(name, pluginMethod);
+            client.addMethod(name, pluginMethod, pluginConfig.override);
         };
     };
 

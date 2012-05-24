@@ -15,39 +15,60 @@
  */
 "use strict";
 
-var severityMax = function(client, config, msg) {
-    if (msg['severity'] > config['severity']) {
-        return false;
-    };
-    return true;
-};
-
-
-var typeBlacklist = function(client, config, msg) {
-    if (msg['type'] in config['types']) {
-        return false;
-    };
-    return true;
-};
-
-
-var typeWhitelist = function(client, config, msg) {
-    if (!(msg['type'] in config['types'])) {
-        return false;
-    };
-    return true;
-};
-
-
-var typeSeverityMax = function(client, config, msg) {
-    typeSpec = config['types'][msg['type']];
-    if (typeof(typeSpec) === 'undefined') {
+var severityMaxProvider = function(config) {
+    var severityMax = function(msg) {
+        if (msg['severity'] > config['severity']) {
+            return false;
+        };
         return true;
     };
-    return severityMax(client, typeSpec, msg);
+    return severityMax;
 };
 
-exports.severityMax = severityMax;
-exports.typeBlacklist = typeBlacklist;
-exports.typeWhitelist = typeWhitelist;
-exports.typeSeverityMax = typeSeverityMax;
+
+var typeBlacklistProvider = function(config) {
+    var typeBlacklist = function(msg) {
+        if (msg['type'] in config['types']) {
+            return false;
+        };
+        return true;
+    };
+    return typeBlacklist;
+};
+
+
+var typeWhitelistProvider = function(config) {
+    var typeWhitelist = function(msg) {
+        if (!(msg['type'] in config['types'])) {
+            return false;
+        };
+        return true;
+    };
+    return typeWhitelist;
+};
+
+
+var typeSeverityMaxProvider = function(config) {
+    var typeFilters = {};
+    for (typeName in config.types) {
+        if (config.types.hasOwnProperty(typeName)) {
+            var typeConfig = config.types[typeName];
+            typeFilters[typeName] = severityMaxProvider(typeConfig);
+        };
+    };
+
+    var typeSeveritMax = function(msg) {
+        var severityMax = typeFilters[msg['type']];
+        if (severityMax === undefined) {
+            return true;
+        };
+        return severityMax(msg);
+    };
+    return typeSeverityMax;
+};
+
+
+exports.severityMaxProvider = severityMaxProvider;
+exports.typeBlacklistProvider = typeBlacklistProvider;
+exports.typeWhitelistProvider = typeWhitelistProvider;
+exports.typeSeverityMaxProvider = typeSeverityMaxProvider;

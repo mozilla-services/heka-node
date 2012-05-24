@@ -45,7 +45,7 @@ MetlogClient.prototype.sendMessage = function(msg) {
     // Apply any filters and pass on the sender if message gets through
     for (var i=0; i<this.filters.length; i++) {
         var filter = this.filters[i];
-        if (!filter.fn(this, filter.config, msg)) {
+        if (!filter(msg)) {
             return;
         };
     };

@@ -48,9 +48,8 @@ describe('client', function() {
         } while (now - start < ms);
     };
 
-    function typeFilter(client, config, msg) {
-        // config should be an object w/ a `types` property
-        if (msg.type in config.types) {
+    function typeFilter(msg) {
+        if (msg.type in {'foo':0, 'bar':0}) {
             return false;
         };
         return true;
@@ -188,7 +187,7 @@ describe('client', function() {
 
     it('supports filter functions', function() {
         var origFilters = client.filters;
-        client.filters = [{'fn': typeFilter, 'config': {'types': {'foo':0, 'bar':0}}}]
+        client.filters = [typeFilter]
         client.metlog('foo');
         client.metlog('baz');
         client.metlog('bar');

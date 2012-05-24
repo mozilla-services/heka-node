@@ -18,10 +18,10 @@
 var filters = require('../filters');
 
 
-var countTrues = function(filter, config, msgs) {
+var countTrues = function(filter, msgs) {
     var trues = 0;
     for (var i=0; i<msgs.length; i++) {
-        if (filter('client', config, msgs[i])) {
+        if (filter(msgs[i])) {
             trues++;
         };
     };
@@ -38,8 +38,9 @@ describe('severityMax filter', function() {
     it('filters correctly', function() {
         for (var i=0; i<msgs.length; i++) {
             var config = {'severity': i};
+            var severityMax = filters.severityMaxProvider(config);
             for (var j=0; j<msgs.length; j++) {
-                var passed = filters.severityMax('client', config, msgs[j]);
+                var passed = severityMax(msgs[j]);
                 if (j > i) {
                     expect(passed).toEqual(false);
                 } else {
@@ -59,11 +60,13 @@ describe('typeBlacklist filter', function() {
 
     it('filters correctly', function() {
         var config = {'types': {'foo': 0}};
-        var trues = countTrues(filters.typeBlacklist, config, msgs);
+        var typeBlacklist = filters.typeBlacklistProvider(config);
+        var trues = countTrues(typeBlacklist, msgs);
         expect(trues).toEqual(3);
 
         config = {'types': {'foo': 0, 'bar': 0, 'baz': 0}};
-        trues = countTrues(filters.typeBlacklist, config, msgs);
+        typeBlacklist = filters.typeBlacklistProvider(config);
+        trues = countTrues(typeBlacklist, msgs);
         expect(trues).toEqual(1);
     });
 });
@@ -76,11 +79,13 @@ describe('typeWhitelist filter', function() {
 
     it('filters correctly', function() {
         var config = {'types': {'foo': 0}};
-        var trues = countTrues(filters.typeWhitelist, config, msgs);
+        var typeWhitelist = filters.typeWhitelistProvider(config);
+        var trues = countTrues(typeWhitelist, msgs);
         expect(trues).toEqual(1);
 
         config = {'types': {'foo': 0, 'bar': 0, 'baz': 0}};
-        trues = countTrues(filters.typeWhitelist, config, msgs);
+        typeWhitelist = filters.typeWhitelistProvider(config);
+        trues = countTrues(typeWhitelist, msgs);
         expect(trues).toEqual(3);
     });
 });
@@ -93,11 +98,12 @@ describe('typeSeverityMax filter', function() {
 
     if('filters correctly', function() {
         var config = {'types': {'foo': {'severity': 3}}};
-        var trues = countTrues(filters.typeSeverityMax, config, msgs);
+        var typeSeverityMax = filters.typeSeverityMaxProvider(config);
+        var trues = countTrues(typeSeverityMax, msgs);
         expect(trues).toEqual(3);
 
         config['types']['bar'] = {'severity': 3};
-        trues = countTrues(filters.typeSeverityMax, config, msgs);
+        trues = countTrues(typeSeverityMax, msgs);
         expect(trues).toEqual(2);
     });
 });

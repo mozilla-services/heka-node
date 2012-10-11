@@ -10,6 +10,7 @@
  *
  * Contributor(s):
  *  Rob Miller (rmiller@mozilla.com)
+ *  Victor Ng (vng@mozilla.com)
  *
  ***** END LICENSE BLOCK *****
  */
@@ -19,6 +20,7 @@ var horaa = require('horaa');
 var sys = require('util');
 var senders = require('../senders');
 var zmqHoraa = horaa('zmq');
+var udpHoraa = horaa('dgram');
 
 describe('ZmqPubSender', function() {
 
@@ -131,4 +133,81 @@ describe('StdoutSender', function() {
         expect(msgs.length).toEqual(1);
         expect(msgs[0]).toEqual(newFormatter(testMsg) + '\n');
     });
+});
+
+describe('UdpSender', function() {
+
+    var mockUdpSocket = {
+        msgs: [],
+        hosts: [],
+        ports: [],
+        send: function(msg, options, length, port, host, callback) {
+            this.msgs[this.msgs.length] = msg.toString("utf8");
+
+            this.hosts[this.hosts.length] = host;
+            this.ports[this.ports.length] = port;
+        },
+        close: function() {
+        }
+    };
+
+
+    var testMsg = "foo bar";
+
+    beforeEach(function() {
+        mockUdpSocket.msgs = [];
+        mockUdpSocket.hosts = [];
+        mockUdpSocket.ports = [];
+        udpHoraa.hijack('createSocket', function(type) {
+            if (type === 'udp4') {
+                return mockUdpSocket;
+            };
+        });
+    });
+
+    afterEach(function() {
+        udpHoraa.restore('createSocket');
+    });
+
+
+    it('sends messages', function() {
+        var sender = new senders.UdpSender('localhost', 5565);
+        sender.sendMessage(testMsg);
+        expect(mockUdpSocket.msgs.length).toEqual(1);
+        expect(mockUdpSocket.msgs[0]).toEqual(testMsg);
+        expect(mockUdpSocket.hosts[0]).toEqual('localhost');
+        expect(mockUdpSocket.ports[0]).toEqual(5565);
+    });
+
+    it('sends messages with more hosts than ports', function() {
+        var sender = new senders.UdpSender(['localhost', '10.0.0.1'], 5565);
+        sender.sendMessage(testMsg);
+        expect(mockUdpSocket.msgs.length).toEqual(2);
+
+        expect(mockUdpSocket.msgs[0]).toEqual(testMsg);
+        expect(mockUdpSocket.msgs[1]).toEqual(testMsg);
+
+        expect(mockUdpSocket.hosts[0]).toEqual('localhost');
+        expect(mockUdpSocket.hosts[1]).toEqual('10.0.0.1');
+
+        expect(mockUdpSocket.ports[0]).toEqual(5565);
+        expect(mockUdpSocket.ports[1]).toEqual(5565);
+    });
+
+
+    it('sends messages with hosts and ports', function() {
+        var sender = new senders.UdpSender(['localhost', '10.0.0.1'], [2345, 5565]);
+        sender.sendMessage(testMsg);
+        expect(mockUdpSocket.msgs.length).toEqual(2);
+
+        expect(mockUdpSocket.msgs[0]).toEqual(testMsg);
+        expect(mockUdpSocket.msgs[1]).toEqual(testMsg);
+
+        expect(mockUdpSocket.hosts[0]).toEqual('localhost');
+        expect(mockUdpSocket.hosts[1]).toEqual('10.0.0.1');
+
+        expect(mockUdpSocket.ports[0]).toEqual(2345);
+        expect(mockUdpSocket.ports[1]).toEqual(5565);
+    });
+
 });

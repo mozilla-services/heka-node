@@ -3,7 +3,7 @@
     "name": "metlog",
     "description": "Metrics logging",
     "version": "0.1.0",
-    "homepage": "https://github.com/mozilla-services/metlog-node,
+    "homepage": "https://github.com/mozilla-services/metlog-node",
     "repository": {
         "type": "git",
         "url": "https://github.com/mozilla-services/metlog-node.git"
@@ -12,7 +12,10 @@
     "engines": {
         "node": ">=0.4.7"
     },
-    "dependencies": {"zmq": ">=1.0.3"},
+    "dependencies": {
+        "zmq": ">=1.0.3",
+        "underscore": ">=1.4.2"
+    },
     "devDependencies": {
         "jasmine-node": ">=1.0.13",
         "horaa": ">=0.1.1alpha"

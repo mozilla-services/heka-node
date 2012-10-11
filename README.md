@@ -1,1 +1,13 @@
 A javascript library for generating and sending metrics logging to a metlog listener.
+
+
+Installing:
+
+    Source Install:
+
+        git clone git://github.com/mozilla-services/metlog-node.git
+        npm install --dev
+
+Running tests :
+
+	jasmine-node tests

@@ -16,6 +16,7 @@
 "use strict";
 var zmq = require('./zmq.js');
 var dev = require('./dev.js');
+var udp = require('./udp.js');
 
 exports.ZmqPubSender = zmq.ZmqPubSender;
 exports.zmqPubSenderFactory = zmq.zmqPubSenderFactory;
@@ -23,3 +24,5 @@ exports.StdoutSender = dev.StdoutSender;
 exports.stdoutSenderFactory = dev.stdoutSenderFactory;
 exports.FileSender = dev.FileSender;
 exports.fileSenderFactory = dev.fileSenderFactory;
+exports.UdpSender = udp.UdpSender;
+exports.UdpSenderFactory = udp.UdpSenderFactory;

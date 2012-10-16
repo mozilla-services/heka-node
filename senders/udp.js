@@ -60,7 +60,7 @@ UdpSender.prototype.sendMessage = function(msg) {
     })
 };
 
-function udpSenderFactory(host, port) {
+var udpSenderFactory = function(host, port) {
     return new UdpSender(host, port);
 };
 

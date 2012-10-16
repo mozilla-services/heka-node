@@ -25,4 +25,4 @@ exports.stdoutSenderFactory = dev.stdoutSenderFactory;
 exports.FileSender = dev.FileSender;
 exports.fileSenderFactory = dev.fileSenderFactory;
 exports.UdpSender = udp.UdpSender;
-exports.UdpSenderFactory = udp.UdpSenderFactory;
+exports.udpSenderFactory = udp.udpSenderFactory;

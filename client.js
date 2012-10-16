@@ -15,6 +15,8 @@
  */
 "use strict"
 
+var config = require('./config');
+var senders = require('./senders');
 var env_version = '0.8';
 
 function IsoDateString(d) {
@@ -123,3 +125,5 @@ MetlogClient.prototype.timer = function(fn, name, opts) {
 
 exports.IsoDateString = IsoDateString;
 exports.MetlogClient = MetlogClient;
+exports.Config = config;
+exports.Senders = senders;

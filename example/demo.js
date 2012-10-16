@@ -3,7 +3,9 @@ var metlog = require('metlog');
 console.log(metlog);
 
 var config = {
-    'sender': {'factory': 'metlog/Senders:udpSenderFactory'},
+    'sender': {'factory': 'metlog/Senders:udpSenderFactory',
+               'host': 'localhost',
+               'port': 5565},
     'logger': 'test',
     'severity': 5
 };

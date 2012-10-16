@@ -210,4 +210,8 @@ describe('UdpSender', function() {
         expect(mockUdpSocket.ports[1]).toEqual(5565);
     });
 
+    it('raises errors on bad host/port pairs', function() {
+        throw new Error("test not implemented");
+    }
+
 });

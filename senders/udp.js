@@ -60,7 +60,12 @@ UdpSender.prototype.sendMessage = function(msg) {
     })
 };
 
-var udpSenderFactory = function(host, port) {
+var udpSenderFactory = function(sender_config) {
+    var host = sender_config['host'];
+    var port = sender_config['port'];
+    if ((host == null) || (port == null)) {
+        throw new Error("Invalid host/port combination: ["+host+"] ["+port+"]");
+    }
     return new UdpSender(host, port);
 };
 

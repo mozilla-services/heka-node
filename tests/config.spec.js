@@ -184,6 +184,17 @@ describe('config', function() {
         expect(client._dynamicMethods['incr']).not.toBe(undefined);
         expect(client.incr()).toEqual(customLabel+': '+'test');
     });
+
+    it('raises errors when no factory attribute exists', function() {
+        var config = {
+            'sender': {}
+        };
+        var jsonConfig = JSON.stringify(config);
+        expect(function() {
+            configModule.clientFromJsonConfig(jsonConfig);
+        }).toThrow(new Error("factory attribute is missing from config"));
+
+    });
 });
 
 exports.makeMockSender = makeMockSender;

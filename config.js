@@ -46,7 +46,11 @@ var getGlobalConfig = function() {
 };
 
 var senderFromConfig = function(config) {
-    // TODO: enforce check for `factory` value
+    if (typeof(config.factory) == 'undefined')
+    {
+        throw new Error("factory attribute is missing from config");
+    }
+
     var senderFactory = resolveName(config.factory);
     return senderFactory(config);
 };

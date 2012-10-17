@@ -73,13 +73,13 @@ UdpSender.prototype.toString = function()
 
 
 var udpSenderFactory = function(sender_config) {
-    var host = sender_config['host'];
-    var port = sender_config['port'];
-    if ((host == null) || (port == null)) {
-        throw new Error("Invalid host/port combination: ["+host+"] ["+port+"]");
+    var hosts = sender_config['hosts'];
+    var ports = sender_config['ports'];
+    if ((hosts == null) || (ports == null)) {
+        throw new Error("Invalid host/port combination: ["+hosts+"] ["+ports+"]");
     }
-    return new UdpSender(host, port);
+    return new UdpSender(hosts, ports);
 };
 
-exports.UdpSender = UdpSender;
+//exports.UdpSender = UdpSender;
 exports.udpSenderFactory = udpSenderFactory;

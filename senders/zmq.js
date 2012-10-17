@@ -34,9 +34,11 @@ ZmqPubSender.prototype.sendMessage = function(msg) {
     this.publisher.send(jsonMsg)
 };
 
-function zmqPubSenderFactory(bindstrs, queueLength) {
+function zmqPubSenderFactory(config) {
+    var bindstrs = config['bindstrs'];
+    var queueLength = config['queueLength'];
     return new ZmqPubSender(bindstrs, queueLength);
 };
 
-exports.ZmqPubSender = ZmqPubSender;
+//exports.ZmqPubSender = ZmqPubSender;
 exports.zmqPubSenderFactory = zmqPubSenderFactory;

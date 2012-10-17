@@ -3,8 +3,8 @@ var _ = require('underscore');
 
 var config = {
     'sender': {'factory': 'metlog/Senders:udpSenderFactory',
-               'host': 'localhost',
-               'port': 5565},
+               'hosts': 'localhost',
+               'ports': 5565},
     'logger': 'test',
     'severity': 5
 };

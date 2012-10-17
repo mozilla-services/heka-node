@@ -54,7 +54,8 @@ describe('ZmqPubSender', function() {
 
     it('initializes correctly', function() {
         var bindstr = 'tcp://127.0.0.1:9988';
-        var sender = new senders.ZmqPubSender(bindstr);
+        var sender = senders.zmqPubSenderFactory({bindstrs: bindstr})
+
         expect(sender.publisher).toBe(mockPublisher);
         expect(mockPublisher.highWaterMark).toEqual(1000);
         expect(mockPublisher.bound).toEqual([bindstr]);
@@ -65,7 +66,8 @@ describe('ZmqPubSender', function() {
         var bindstrs = ['tcp://10.10.10.1:9988',
                         'tcp://10.10.10.2:8877'];
         var queueLength = 500;
-        var sender = new senders.ZmqPubSender(bindstrs, queueLength);
+        var sender = senders.zmqPubSenderFactory({bindstrs: bindstrs, 
+                                                   queueLength: queueLength});
         expect(sender.publisher).toBe(mockPublisher);
         expect(mockPublisher.highWaterMark).toEqual(queueLength);
         expect(mockPublisher.bound).toEqual(bindstrs);
@@ -74,7 +76,8 @@ describe('ZmqPubSender', function() {
 
     it('sends messages', function() {
         var bindstr = 'tcp://127.0.0.1:9988';
-        var sender = new senders.ZmqPubSender(bindstr);
+        var sender = senders.zmqPubSenderFactory({bindstrs: bindstr});
+
         var msg = {'hello': 'world',
                    'goodbye': 'friend'};
         sender.sendMessage(msg);
@@ -118,7 +121,7 @@ describe('StdoutSender', function() {
     });
 
     it('sends messages', function() {
-        var sender = new senders.StdoutSender();
+        var sender = senders.stdoutSenderFactory();
         sender.sendMessage(testMsg);
         expect(msgs.length).toEqual(1);
         expect(msgs[0]).toEqual(JSON.stringify(testMsg) + '\n');
@@ -128,7 +131,7 @@ describe('StdoutSender', function() {
         var newFormatter = function(msg) {
             return ':::' + JSON.stringify(msg) + ':::';
         };
-        var sender = new senders.StdoutSender(newFormatter);
+        var sender = senders.stdoutSenderFactory({'formatter': newFormatter});
         sender.sendMessage(testMsg);
         expect(msgs.length).toEqual(1);
         expect(msgs[0]).toEqual(newFormatter(testMsg) + '\n');
@@ -171,7 +174,8 @@ describe('UdpSender', function() {
 
 
     it('sends messages', function() {
-        var sender = new senders.UdpSender('localhost', 5565);
+        var sender = senders.udpSenderFactory({hosts: 'localhost', 
+                                               ports: 5565});
         sender.sendMessage(testMsg);
         expect(mockUdpSocket.msgs.length).toEqual(1);
         expect(mockUdpSocket.msgs[0]).toEqual(sender.encoder(testMsg));
@@ -180,7 +184,8 @@ describe('UdpSender', function() {
     });
 
     it('sends messages with more hosts than ports', function() {
-        var sender = new senders.UdpSender(['localhost', '10.0.0.1'], 5565);
+        var sender = senders.udpSenderFactory({hosts: ['localhost', '10.0.0.1'], 
+                                               ports: 5565});
         sender.sendMessage(testMsg);
         expect(mockUdpSocket.msgs.length).toEqual(2);
 
@@ -196,7 +201,8 @@ describe('UdpSender', function() {
 
 
     it('sends messages with hosts and ports', function() {
-        var sender = new senders.UdpSender(['localhost', '10.0.0.1'], [2345, 5565]);
+        var sender = senders.udpSenderFactory({hosts: ['localhost', '10.0.0.1'], 
+                                               ports: [2345, 5565]});
         sender.sendMessage(testMsg);
         expect(mockUdpSocket.msgs.length).toEqual(2);
 
@@ -223,7 +229,8 @@ describe('UdpSender', function() {
     */
 
     it('serializes to JSON by default', function() {
-        var sender = new senders.UdpSender(['localhost', '10.0.0.1'], [2345, 5565]);
+        var sender = senders.udpSenderFactory({hosts: ['localhost', '10.0.0.1'], 
+                                               ports: [2345, 5565]});
         expect(sender.encoder).toEqual(JSON.stringify);
     });
 

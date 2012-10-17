@@ -44,7 +44,9 @@ var StdoutSender = function(formatter) {
 };
 asStreamSender.call(StdoutSender.prototype);
 
-var stdoutSenderFactory = function(formatter) {
+var stdoutSenderFactory = function(config) {
+    var config = typeof config !== 'undefined' ? config : {};
+    var formatter = config['formatter'];
     return new StdoutSender(formatter);
 };
 
@@ -60,7 +62,7 @@ var fileSenderFactory = function(filePath, formatter) {
 };
 
 
-exports.StdoutSender = StdoutSender;
-exports.stdoutSenderFactory = stdoutSenderFactory;
-exports.FileSender = FileSender;
+//exports.FileSender = FileSender;
+//exports.StdoutSender = StdoutSender;
 exports.fileSenderFactory = fileSenderFactory;
+exports.stdoutSenderFactory = stdoutSenderFactory;

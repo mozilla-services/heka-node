@@ -18,11 +18,15 @@ var zmq = require('./zmq.js');
 var dev = require('./dev.js');
 var udp = require('./udp.js');
 
-exports.ZmqPubSender = zmq.ZmqPubSender;
-exports.zmqPubSenderFactory = zmq.zmqPubSenderFactory;
-exports.StdoutSender = dev.StdoutSender;
-exports.stdoutSenderFactory = dev.stdoutSenderFactory;
-exports.FileSender = dev.FileSender;
+// TODO: remove all public access to the raw Sender class definitions
+// and only allow acces via the factory interface
+//
+//exports.FileSender = dev.FileSender;
+//exports.StdoutSender = dev.StdoutSender;
+//exports.UdpSender = udp.UdpSender;
+//exports.ZmqPubSender = zmq.ZmqPubSender;
+
 exports.fileSenderFactory = dev.fileSenderFactory;
-exports.UdpSender = udp.UdpSender;
+exports.stdoutSenderFactory = dev.stdoutSenderFactory;
 exports.udpSenderFactory = udp.udpSenderFactory;
+exports.zmqPubSenderFactory = zmq.zmqPubSenderFactory;

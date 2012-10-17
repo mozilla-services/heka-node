@@ -16,7 +16,6 @@
 "use strict"
 
 var config = require('./config');
-var senders = require('./senders');
 var env_version = '0.8';
 
 function IsoDateString(d) {
@@ -28,13 +27,14 @@ function IsoDateString(d) {
         + pad(d.getUTCMinutes()) + ':'
         + pad(d.getUTCSeconds()) + 'Z'}
 
-var MetlogClient = function(sender, logger, severity, disabledTimers, filters) {
-    // metlog client constructor
+var MetlogClient = function(sender, logger, severity, disabledTimers, filters) 
+{
     this.setup(sender, logger, severity, disabledTimers, filters);
 };
 
 MetlogClient.prototype.setup = function(sender, logger, severity, disabledTimers,
-                                        filters) {
+        filters)
+{
     this.sender = sender;
     this.logger = typeof(logger) != 'undefined' ? logger : '';
     this.severity = typeof(severity) != 'undefined' ? severity : 6;
@@ -43,7 +43,7 @@ MetlogClient.prototype.setup = function(sender, logger, severity, disabledTimers
     this._dynamicMethods = {};
 };
 
-MetlogClient.prototype.sendMessage = function(msg) {
+MetlogClient.prototype._sendMessage = function(msg) {
     // Apply any filters and pass on the sender if message gets through
     for (var i=0; i<this.filters.length; i++) {
         var filter = this.filters[i];
@@ -66,10 +66,10 @@ MetlogClient.prototype.metlog = function(type, opts) {
         opts.timestamp = IsoDateString(opts.timestamp);
     };
     var fullMsg = {'type': type, 'timestamp': opts.timestamp,
-                   'logger': opts.logger, 'severity': opts.severity,
-                   'payload': opts.payload, 'fields': opts.fields,
-                   'env_version': env_version};
-    this.sendMessage(fullMsg);
+        'logger': opts.logger, 'severity': opts.severity,
+        'payload': opts.payload, 'fields': opts.fields,
+        'env_version': env_version};
+    this._sendMessage(fullMsg);
 };
 
 MetlogClient.prototype.addMethod = function(name, method, override) {
@@ -123,7 +123,8 @@ MetlogClient.prototype.timer = function(fn, name, opts) {
     };
 };
 
+
+
 exports.IsoDateString = IsoDateString;
 exports.MetlogClient = MetlogClient;
-exports.Config = config;
-exports.Senders = senders;
+exports.clientFromJsonConfig = config.clientFromJsonConfig;

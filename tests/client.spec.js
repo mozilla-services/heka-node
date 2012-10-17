@@ -64,8 +64,7 @@ describe('client', function() {
     it('initializes w alternate defaults', function() {
         var otherLoggerVal = 'sugob';
         var otherSeverity = 3;
-        var otherClient = new module.MetlogClient(mockSender, otherLoggerVal,
-                                            otherSeverity);
+        var otherClient = new module.MetlogClient(mockSender, otherLoggerVal, otherSeverity);
         expect(otherClient.sender).toBe(mockSender);
         expect(otherClient.logger).toEqual(otherLoggerVal);
         expect(otherClient.severity).toEqual(otherSeverity);

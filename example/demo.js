@@ -1,6 +1,5 @@
 var metlog = require('metlog');
-
-console.log(metlog);
+var _ = require('underscore');
 
 var config = {
     'sender': {'factory': 'metlog/Senders:udpSenderFactory',
@@ -10,7 +9,10 @@ var config = {
     'severity': 5
 };
 var jsonConfig = JSON.stringify(config);
-var client = metlog.Config.clientFromJsonConfig(jsonConfig);
+var client = metlog.clientFromJsonConfig(jsonConfig);
 console.log('----------');
-console.log(client);
+console.log(client.sender.toString());
+var timestamp = new Date();
+client.incr("blah", {'timestamp': timestamp});
+
 

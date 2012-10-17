@@ -18,11 +18,8 @@
 
 var _ = require('underscore');
 
-var UdpSender = function(host, port) {
-    /* 
-     * TODO: enable multiple host/port support
-     * and extend missing port numbers to the last port in the list
-     */
+var UdpSender = function(host, port, encoder) {
+    this.encoder = typeof encoder !== 'undefined' ? encoder : JSON.stringify;
 
     if (!Array.isArray(host))
     {
@@ -34,31 +31,46 @@ var UdpSender = function(host, port) {
         port = [port];
     }
 
-    /* extend the ports list */
-    var num_extra_hosts = host.length - port.length
+    /* 
+     * Multiple host/port support is included.
+     * We extend missing port numbers to the last port in the list
+     */
+    var num_extra_hosts = host.length - port.length;
 
     for (var i=0; i<num_extra_hosts; i++)
     {
-        port[port.length+i] = port[port.length-1]
+        port[port.length+i] = port[port.length-1];
     }
 
-    this._destination = _.zip(host, port)
-
+    this._destination = _.zip(host, port);
     this.dgram = require('dgram');
 };
 
 UdpSender.prototype.sendMessage = function(msg) {
-    var message = new Buffer(msg);
+    var message = new Buffer(this.encoder(msg));
     var client = this.dgram.createSocket("udp4");
 
     _.each(this._destination, function(elem) {
         var host = elem[0];
         var port = elem[1];
         client.send(message, 0, message.length, port, host, function(err, bytes) {
-              client.close();
+            client.close();
         });
     })
 };
+
+UdpSender.prototype.toString = function()
+{
+    var result = "UDPSender---\n";
+    _.each(this._destination, function(elem) {
+        var host = elem[0];
+        var port = elem[1];
+        result += "Destination : "+host+":"+port+"\n";
+    });
+    result += "---UDPSender\n";
+    return result;
+}
+
 
 var udpSenderFactory = function(sender_config) {
     var host = sender_config['host'];

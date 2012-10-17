@@ -174,7 +174,7 @@ describe('UdpSender', function() {
         var sender = new senders.UdpSender('localhost', 5565);
         sender.sendMessage(testMsg);
         expect(mockUdpSocket.msgs.length).toEqual(1);
-        expect(mockUdpSocket.msgs[0]).toEqual(testMsg);
+        expect(mockUdpSocket.msgs[0]).toEqual(sender.encoder(testMsg));
         expect(mockUdpSocket.hosts[0]).toEqual('localhost');
         expect(mockUdpSocket.ports[0]).toEqual(5565);
     });
@@ -184,8 +184,8 @@ describe('UdpSender', function() {
         sender.sendMessage(testMsg);
         expect(mockUdpSocket.msgs.length).toEqual(2);
 
-        expect(mockUdpSocket.msgs[0]).toEqual(testMsg);
-        expect(mockUdpSocket.msgs[1]).toEqual(testMsg);
+        expect(mockUdpSocket.msgs[0]).toEqual(sender.encoder(testMsg));
+        expect(mockUdpSocket.msgs[1]).toEqual(sender.encoder(testMsg));
 
         expect(mockUdpSocket.hosts[0]).toEqual('localhost');
         expect(mockUdpSocket.hosts[1]).toEqual('10.0.0.1');
@@ -200,8 +200,8 @@ describe('UdpSender', function() {
         sender.sendMessage(testMsg);
         expect(mockUdpSocket.msgs.length).toEqual(2);
 
-        expect(mockUdpSocket.msgs[0]).toEqual(testMsg);
-        expect(mockUdpSocket.msgs[1]).toEqual(testMsg);
+        expect(mockUdpSocket.msgs[0]).toEqual(sender.encoder(testMsg));
+        expect(mockUdpSocket.msgs[1]).toEqual(sender.encoder(testMsg));
 
         expect(mockUdpSocket.hosts[0]).toEqual('localhost');
         expect(mockUdpSocket.hosts[1]).toEqual('10.0.0.1');
@@ -210,8 +210,21 @@ describe('UdpSender', function() {
         expect(mockUdpSocket.ports[1]).toEqual(5565);
     });
 
+
+    /*
     it('raises errors on bad host/port pairs', function() {
         throw new Error("test not implemented");
     }
+
+    it('works with factory functions', function() {
+        // We need a way to run the 
+        throw new Error("test not implemented");
+    }
+    */
+
+    it('serializes to JSON by default', function() {
+        var sender = new senders.UdpSender(['localhost', '10.0.0.1'], [2345, 5565]);
+        expect(sender.encoder).toEqual(JSON.stringify);
+    });
 
 });

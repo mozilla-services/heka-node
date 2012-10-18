@@ -14,55 +14,38 @@
  ***** END LICENSE BLOCK *****
  */
 var fs = require('fs');
+var base = require('./base');
 
-
-var defaultFormatter = function(msg) {
-    return JSON.stringify(msg);
-};
-
-
-var asStreamSender = function() {
-    this.init = function(formatter) {
-        if (typeof(formatter) === 'function') {
-            this.formatter = formatter;
-        } else {
-            this.formatter = defaultFormatter;
-        };
-    };
-
-    this.sendMessage = function(msg) {
-        output = this.formatter(msg);
-        this.stream.write(output + '\n');
-    };
-
-};
-
-
-var StdoutSender = function(formatter) {
+var StdoutSender = function(encoder) {
     this.stream = process.stdout;
-    this.init(formatter);
+    this.init(encoder);
+
+    this.send_msg = function(text) {
+        this.stream.write(text+ '\n');
+    }
 };
-asStreamSender.call(StdoutSender.prototype);
+base.abstractSender.call(StdoutSender.prototype);
 
 var stdoutSenderFactory = function(config) {
     var config = typeof config !== 'undefined' ? config : {};
-    var formatter = config['formatter'];
-    return new StdoutSender(formatter);
+    var encoder = config['encoder'];
+    return new StdoutSender(encoder);
 };
 
 
-var FileSender = function(filePath, formatter) {
+var FileSender = function(filePath, encoder) {
     this.stream = fs.createWriteStream(filePath);
-    this.init(formatter);
+    this.init(encoder);
+
+    this.send_msg = function(text) {
+        this.stream.write(text+ '\n');
+    }
 };
-asStreamSender.call(FileSender.prototype)
+base.abstractSender.call(FileSender.prototype)
 
-var fileSenderFactory = function(filePath, formatter) {
-    return new FileSender(filePath, formatter);
+var fileSenderFactory = function(filePath, encoder) {
+    return new FileSender(filePath, encoder);
 };
 
-
-//exports.FileSender = FileSender;
-//exports.StdoutSender = StdoutSender;
 exports.fileSenderFactory = fileSenderFactory;
 exports.stdoutSenderFactory = stdoutSenderFactory;

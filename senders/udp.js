@@ -17,9 +17,10 @@
 "use strict";
 
 var _ = require('underscore');
+var base = require('./base');
 
 var UdpSender = function(host, port, encoder) {
-    this.encoder = typeof encoder !== 'undefined' ? encoder : JSON.stringify;
+    this.init(encoder);
 
     if (!Array.isArray(host))
     {
@@ -44,32 +45,35 @@ var UdpSender = function(host, port, encoder) {
 
     this._destination = _.zip(host, port);
     this.dgram = require('dgram');
-};
 
-UdpSender.prototype.sendMessage = function(msg) {
-    var message = new Buffer(this.encoder(msg));
-    var client = this.dgram.createSocket("udp4");
 
-    _.each(this._destination, function(elem) {
-        var host = elem[0];
-        var port = elem[1];
-        client.send(message, 0, message.length, port, host, function(err, bytes) {
-            client.close();
+    this.send_msg = function(text) {
+        var message = new Buffer(text);
+        var client = this.dgram.createSocket("udp4");
+
+        _.each(this._destination, function(elem) {
+            var host = elem[0];
+            var port = elem[1];
+            client.send(message, 0, message.length, port, host, function(err, bytes) {
+                client.close();
+            });
+        })
+    };
+
+    this.toString = function()
+    {
+        var result = "UdpSender ---\n";
+        _.each(this._destination, function(elem) {
+            var host = elem[0];
+            var port = elem[1];
+            result += "Destination : "+host+":"+port+"\n";
         });
-    })
-};
+        result += "---UdpSender \n";
+        return result;
+    };
 
-UdpSender.prototype.toString = function()
-{
-    var result = "UDPSender---\n";
-    _.each(this._destination, function(elem) {
-        var host = elem[0];
-        var port = elem[1];
-        result += "Destination : "+host+":"+port+"\n";
-    });
-    result += "---UDPSender\n";
-    return result;
-}
+};
+base.abstractSender.call(UdpSender.prototype);
 
 
 var udpSenderFactory = function(sender_config) {

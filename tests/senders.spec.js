@@ -127,11 +127,11 @@ describe('StdoutSender', function() {
         expect(msgs[0]).toEqual(JSON.stringify(testMsg) + '\n');
     });
 
-    it('supports alternate formatters', function() {
+    it('supports alternate encoders', function() {
         var newFormatter = function(msg) {
             return ':::' + JSON.stringify(msg) + ':::';
         };
-        var sender = senders.stdoutSenderFactory({'formatter': newFormatter});
+        var sender = senders.stdoutSenderFactory({encoder: newFormatter});
         sender.sendMessage(testMsg);
         expect(msgs.length).toEqual(1);
         expect(msgs[0]).toEqual(newFormatter(testMsg) + '\n');

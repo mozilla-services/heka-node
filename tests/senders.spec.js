@@ -229,9 +229,10 @@ describe('UdpSender', function() {
     */
 
     it('serializes to JSON by default', function() {
+        var encoders = require('../senders/encoders');
         var sender = senders.udpSenderFactory({hosts: ['localhost', '10.0.0.1'], 
                                                ports: [2345, 5565]});
-        expect(sender.encoder).toEqual(JSON.stringify);
+        expect(sender.encoder).toEqual(encoders.jsonEncoder);
     });
 
 });

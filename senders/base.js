@@ -15,6 +15,7 @@
  ***** END LICENSE BLOCK *****
  */
 
+var encoders = require('./encoders');
 
 var abstractSender = function() {
     /*
@@ -26,7 +27,7 @@ var abstractSender = function() {
         if (typeof(encoder) === 'function') {
             this.encoder = encoder;
         } else {
-            this.encoder = JSON.stringify;
+            this.encoder = encoders.jsonEncoder;
         };
     };
 

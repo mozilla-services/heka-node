@@ -20,8 +20,8 @@ var StdoutSender = function(encoder) {
     this.stream = process.stdout;
     this.init(encoder);
 
-    this.send_msg = function(text) {
-        this.stream.write(text+ '\n');
+    this._send_msg = function(text) {
+        this.stream.write(text);
     }
 };
 base.abstractSender.call(StdoutSender.prototype);
@@ -37,8 +37,8 @@ var FileSender = function(filePath, encoder) {
     this.stream = fs.createWriteStream(filePath);
     this.init(encoder);
 
-    this.send_msg = function(text) {
-        this.stream.write(text+ '\n');
+    this._send_msg = function(text) {
+        this.stream.write(text);
     }
 };
 base.abstractSender.call(FileSender.prototype)

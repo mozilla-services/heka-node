@@ -47,7 +47,7 @@ var UdpSender = function(host, port, encoder) {
     this.dgram = require('dgram');
 
 
-    this.send_msg = function(text) {
+    this._send_msg = function(text) {
         var message = new Buffer(text);
         var client = this.dgram.createSocket("udp4");
 

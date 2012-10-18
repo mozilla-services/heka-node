@@ -32,7 +32,7 @@ var ZmqPubSender = function(bindstrs, queueLength, encoder) {
     };
     this.publisher = publisher;
 
-    this.send_msg = function(text) {
+    this._send_msg = function(text) {
         this.publisher.send(text)
     };
 

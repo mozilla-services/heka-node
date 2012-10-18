@@ -82,12 +82,12 @@ describe('ZmqPubSender', function() {
                    'goodbye': 'friend'};
         sender.sendMessage(msg);
         expect(mockPublisher.sent).toEqual(1);
-        expect(mockPublisher.msg).toEqual(JSON.stringify(msg));
+        expect(mockPublisher.msg).toEqual(JSON.stringify(msg)+"\n");
         var msg2 = {'until': 'we',
                     'meet': 'again'};
         sender.sendMessage(msg2);
         expect(mockPublisher.sent).toEqual(2);
-        expect(mockPublisher.msg).toEqual(JSON.stringify(msg2));
+        expect(mockPublisher.msg).toEqual(JSON.stringify(msg2) + "\n");
     });
 
 });
@@ -124,7 +124,7 @@ describe('StdoutSender', function() {
         var sender = senders.stdoutSenderFactory();
         sender.sendMessage(testMsg);
         expect(msgs.length).toEqual(1);
-        expect(msgs[0]).toEqual(JSON.stringify(testMsg) + '\n');
+        expect(msgs[0]).toEqual(JSON.stringify(testMsg) + "\n");
     });
 
     it('supports alternate encoders', function() {
@@ -134,7 +134,7 @@ describe('StdoutSender', function() {
         var sender = senders.stdoutSenderFactory({encoder: newFormatter});
         sender.sendMessage(testMsg);
         expect(msgs.length).toEqual(1);
-        expect(msgs[0]).toEqual(newFormatter(testMsg) + '\n');
+        expect(msgs[0]).toEqual(newFormatter(testMsg));
     });
 });
 

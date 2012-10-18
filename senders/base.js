@@ -33,7 +33,11 @@ var abstractSender = function() {
 
     this.sendMessage = function(msg) {
         output = this.encoder(msg);
-        this.send_msg(output);
+
+        // The implementation of send_msg should *not* alter the
+        // content in anyway prior to transmission.  This ensures that
+        // switching to an alternate encoder is always safe.
+        this._send_msg(output);
     };
 
 };

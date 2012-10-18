@@ -24,7 +24,7 @@ try
 }
 
 var jsonEncoder = function(data) {
-    return JSON.stringify(data);
+    return JSON.stringify(data) + "\n";
 }
 
 var msgpackEncoder = function(data) {

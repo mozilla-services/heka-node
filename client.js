@@ -114,7 +114,9 @@ MetlogClient.prototype.timer = function(fn, name, opts) {
     var currentClient = this;
     return function() {
         var startTime = new Date().getTime();
-        // might this yield at the function call boundaries?
+        // The decorated function may yield during invocation
+        // so the timer may return a higher value than the actual
+        // execution time of *just* the decorated function
         var retVal = fn.apply(this, arguments);
         var endTime = new Date().getTime();
         var elapsed = endTime - startTime;

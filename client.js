@@ -93,7 +93,7 @@ MetlogClient.prototype.incr = function(name, opts) {
     this.metlog('counter', opts);
 };
 
-MetlogClient.prototype.timed = function(elapsed, name, opts) {
+MetlogClient.prototype.timer_send = function(elapsed, name, opts) {
     // opts = timestamp, logger, severity, fields, rate
     if (opts.rate === undefined) opts.rate = 1;
     if (opts.rate < 1 && Math.random(1) >= opts.rate) {
@@ -120,7 +120,7 @@ MetlogClient.prototype.timer = function(fn, name, opts) {
         var retVal = fn.apply(this, arguments);
         var endTime = new Date().getTime();
         var elapsed = endTime - startTime;
-        currentClient.timed(elapsed, name, opts);
+        currentClient.timer_send(elapsed, name, opts);
         return retVal;
     };
 };

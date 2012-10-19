@@ -121,7 +121,7 @@ describe('client', function() {
         var name = 'timed name';
         var elapsed = 35;
         var diffLogger = 'different'
-        client.timed(elapsed, name, {'timestamp': timestamp,
+        client.timer_send(elapsed, name, {'timestamp': timestamp,
                                      'logger': diffLogger});
         expect(mockSender.sent).toEqual(1);
         var msg = mockSender.msgs[mockSender.msgs.length - 1];
@@ -141,7 +141,7 @@ describe('client', function() {
         var rate = 0.01;
         var repeats = 10;
         for (var i=0; i < repeats; i++) {
-            client.timed(elapsed, name, {'timestamp': timestamp,
+            client.timer_send(elapsed, name, {'timestamp': timestamp,
                                          'rate': rate});
         };
         // this is a very weak test, w/ a small probability of failing incorrectly :(

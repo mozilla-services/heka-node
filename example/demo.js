@@ -1,20 +1,41 @@
 var metlog = require('metlog');
 var _ = require('underscore');
+var restify = require('restify');
 
-var config = {
-    'sender': {'factory': 'metlog/Senders:udpSenderFactory',
-               'hosts': 'localhost',
-               'ports': 5565},
+var METLOG_CONF = {
+    'sender': {'factory': 'metlog/Senders:stdoutSenderFactory'},
     'logger': 'test',
     'severity': 5
 };
-var jsonConfig = JSON.stringify(config);
-var client = metlog.clientFromJsonConfig(jsonConfig);
-console.log('----------');
-console.log(client.sender.toString());
-var timestamp = new Date();
-client.incr("blah", {'timestamp': timestamp});
+var jsonConfig = JSON.stringify(METLOG_CONF);
+var log = metlog.clientFromJsonConfig(jsonConfig);
 
+var server = restify.createServer({
+      name: 'myapp',
+      version: '1.0.0'
+});
+server.use(restify.acceptParser(server.acceptable));
+server.use(restify.queryParser());
+server.use(restify.bodyParser());
 
+function block(ms) {
+    // naive cpu consuming "sleep", should never be used in real code
+    var start = new Date();
+    var now;
+    do {
+        now = new Date();
+    } while (now - start < ms);
+};
 
+var echo_func = function(request, response, next) {
+    response.send(request.params);
+    block(10);
+    log.incr('foo');
+    return next();
+};
 
+server.get('/echo/:name', log.timer(echo_func, 'timed_echo'));
+
+server.listen(8000, function () {
+      console.log('%s listening at %s', server.name, server.url);
+});

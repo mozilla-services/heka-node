@@ -17,7 +17,7 @@
 
 var sys = require('util');
 var module = require('../client.js');
-
+var os = require('os');
 
 describe('client', function() {
     var mockSender = {
@@ -81,6 +81,8 @@ describe('client', function() {
         expect(msg.type).toEqual(type);
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(loggerVal);
+        expect(msg.metlog_pid).toEqual(process.pid);
+        expect(msg.metlog_hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(6);
         expect(msg.payload).toEqual(payload);
         expect(msg.fields).toEqual({});
@@ -95,6 +97,8 @@ describe('client', function() {
         expect(msg.type).toEqual('counter');
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(loggerVal);
+        expect(msg.metlog_pid).toEqual(process.pid);
+        expect(msg.metlog_hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(6);
         expect(msg.fields).toEqual({'name': name, 'rate': 1.0});
         expect(msg.payload).toEqual('1');
@@ -111,6 +115,8 @@ describe('client', function() {
         expect(msg.type).toEqual('counter');
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(loggerVal);
+        expect(msg.metlog_pid).toEqual(process.pid);
+        expect(msg.metlog_hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(6);
         expect(msg.fields).toEqual({'name': name, 'rate': 1.0});
         expect(msg.payload).toEqual('3');
@@ -128,6 +134,8 @@ describe('client', function() {
         expect(msg.type).toEqual('timer');
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(diffLogger);
+        expect(msg.metlog_pid).toEqual(process.pid);
+        expect(msg.metlog_hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(6);
         expect(msg.fields).toEqual({'name': name,
                                     'rate': 1});
@@ -166,6 +174,8 @@ describe('client', function() {
         expect(msg.type).toEqual('timer');
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(loggerVal);
+        expect(msg.metlog_pid).toEqual(process.pid);
+        expect(msg.metlog_hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(diffSeverity);
         expect(msg.fields).toEqual({'name': name,
                                     'rate': 1});
@@ -178,6 +188,8 @@ describe('client', function() {
         expect(msg.type).toEqual('timer');
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(loggerVal);
+        expect(msg.metlog_pid).toEqual(process.pid);
+        expect(msg.metlog_hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(diffSeverity);
         expect(msg.fields).toEqual({'name': name,
                                     'rate': 1});

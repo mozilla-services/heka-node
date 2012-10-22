@@ -17,6 +17,8 @@
 
 var config = require('./config');
 var env_version = '0.8';
+var os = require('os');
+
 
 function IsoDateString(d) {
     function pad(n) {return n<10 ? '0'+n : n};
@@ -41,6 +43,10 @@ MetlogClient.prototype.setup = function(sender, logger, severity, disabledTimers
     this.disabledTimers = typeof(disabledTimers) != 'undefined' ? disabledTimers : [];
     this.filters = typeof(filters) != 'undefined' ? filters : [];
     this._dynamicMethods = {};
+
+    this.pid = process.pid;
+    this.hostname = os.hostname();
+
 };
 
 MetlogClient.prototype._sendMessage = function(msg) {
@@ -65,10 +71,18 @@ MetlogClient.prototype.metlog = function(type, opts) {
     if (opts.timestamp instanceof Date) {
         opts.timestamp = IsoDateString(opts.timestamp);
     };
+
+    if (opts.pid === undefined) opts.pid = this.pid;
+    if (opts.hostname === undefined) opts.hostname = this.hostname;
+
+
     var fullMsg = {'type': type, 'timestamp': opts.timestamp,
         'logger': opts.logger, 'severity': opts.severity,
         'payload': opts.payload, 'fields': opts.fields,
-        'env_version': env_version};
+        'env_version': env_version,
+        'metlog_pid': opts.pid,
+        'metlog_hostname': opts.hostname
+    };
     this._sendMessage(fullMsg);
 };
 

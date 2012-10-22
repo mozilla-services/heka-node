@@ -83,13 +83,15 @@ MetlogClient.prototype.addMethod = function(name, method, override) {
     this[name] = method;
 };
 
-MetlogClient.prototype.incr = function(name, opts) {
+MetlogClient.prototype.incr = function(name, opts, sample_rate) {
     // opts = count, timestamp, logger, severity, fields
     if (opts === undefined) opts = {};
     if (opts.count === undefined) opts.count = 1;
     if (opts.fields === undefined) opts.fields = {};
+    if (typeof sample_rate === 'undefined') sample_rate = 1.0;
     opts.payload = String(opts.count);
     opts.fields['name'] = name;
+    opts.fields['rate'] = sample_rate;
     this.metlog('counter', opts);
 };
 

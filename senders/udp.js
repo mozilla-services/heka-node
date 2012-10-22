@@ -85,5 +85,4 @@ var udpSenderFactory = function(sender_config) {
     return new UdpSender(hosts, ports);
 };
 
-//exports.UdpSender = UdpSender;
 exports.udpSenderFactory = udpSenderFactory;

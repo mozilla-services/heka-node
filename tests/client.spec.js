@@ -96,7 +96,7 @@ describe('client', function() {
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(loggerVal);
         expect(msg.severity).toEqual(6);
-        expect(msg.fields).toEqual({'name': name});
+        expect(msg.fields).toEqual({'name': name, 'rate': 1.0});
         expect(msg.payload).toEqual('1');
     });
 
@@ -112,7 +112,7 @@ describe('client', function() {
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(loggerVal);
         expect(msg.severity).toEqual(6);
-        expect(msg.fields).toEqual({'name': name});
+        expect(msg.fields).toEqual({'name': name, 'rate': 1.0});
         expect(msg.payload).toEqual('3');
     });
 

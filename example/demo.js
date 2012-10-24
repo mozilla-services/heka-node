@@ -7,6 +7,7 @@
  *    http://localhost:8000/echo/blahblahblah
  *
  */
+"use strict";
 
 var metlog = require('metlog');
 var _ = require('underscore');

@@ -62,5 +62,9 @@ global
   option that is global to all Metlog clients process-wide and not
   just the client being configured presently.
 
+filters
+  You can configure client side filters to restrict messages from
+  going to the server.
 
 TODO: show a pathologically overly configured factory
+

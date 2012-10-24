@@ -15,6 +15,7 @@
  */
 "use strict";
 
+var _ = require('underscore');
 var sys = require('util');
 var module = require('../client.js');
 var os = require('os');
@@ -234,4 +235,24 @@ describe('client', function() {
         expect(mockSender.msgs[0].type).toEqual('foo');
         expect(mockSender.msgs[0].payload).toEqual('FOO: bar');
     });
+
+    it("provides simple oldstyle logging methods", function() {
+        var msg_pairs = [[client.debug, "debug_msg"],
+        [client.info, "info_msg"],
+        [client.warn, "warn_msg"],
+        [client.error, "err_msg"],
+        [client.exception, "exc_msg"],
+        [client.critical, "crit_msg"]]
+
+        _.each(msg_pairs, function(elem) {
+            var method = elem[0];
+            var data = elem[1];
+            method.call(client, data)
+            expect(_.last(client.sender.msgs).payload).toEqual(data);
+        });
+        expect(client.sender.msgs.length).toEqual(6);
+
+
+    });
+
 });

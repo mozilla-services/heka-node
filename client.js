@@ -19,6 +19,17 @@ var config = require('./config');
 var env_version = '0.8';
 var os = require('os');
 
+// Put a namespace around RFC 3164 syslog messages
+var SEVERITY = {
+    EMERGENCY: 0,
+    ALERT: 1,
+    CRITICAL: 2,
+    ERROR: 3,
+    WARNING: 4,
+    NOTICE: 5,
+    INFORMATIONAL: 6,
+    DEBUG: 7
+}
 
 function IsoDateString(d) {
     function pad(n) {return n<10 ? '0'+n : n};
@@ -141,7 +152,36 @@ MetlogClient.prototype.timer = function(fn, name, opts) {
     };
 };
 
+MetlogClient.prototype._oldstyle = function(severity, msg, opts) {
+    if (opts === undefined) opts = {};
+    if (opts.fields === undefined) opts.fields = {};
+    opts.payload = String(msg);
+    this.metlog('oldstyle', opts);
+}
 
+MetlogClient.prototype.debug = function(msg, opts) {
+    this._oldstyle(SEVERITY.DEBUG, msg, opts);
+}
+
+MetlogClient.prototype.info = function(msg, opts) {
+    this._oldstyle(SEVERITY.INFORMATIONAL, msg, opts);
+}
+
+MetlogClient.prototype.warn = function(msg, opts) {
+    this._oldstyle(SEVERITY.WARNING, msg, opts);
+}
+
+MetlogClient.prototype.error = function(msg, opts) {
+    this._oldstyle(SEVERITY.ERROR, msg, opts);
+}
+
+MetlogClient.prototype.exception = function(msg, opts) {
+    this._oldstyle(SEVERITY.ALERT, msg, opts);
+}
+
+MetlogClient.prototype.critical = function(msg, opts) {
+    this._oldstyle(SEVERITY.CRITICAL, msg, opts);
+}
 
 exports.IsoDateString = IsoDateString;
 exports.MetlogClient = MetlogClient;

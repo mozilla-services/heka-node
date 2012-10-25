@@ -18,6 +18,7 @@
 var config = require('./config');
 var env_version = '0.8';
 var os = require('os');
+var _ = require('underscore');
 
 // Put a namespace around RFC 3164 syslog messages
 var SEVERITY = {
@@ -122,12 +123,12 @@ MetlogClient.prototype.incr = function(name, opts, sample_rate) {
 
 MetlogClient.prototype.timer_send = function(elapsed, name, opts) {
     // opts = timestamp, logger, severity, fields, rate
+    if (opts === undefined) opts = {};
     if (opts.rate === undefined) opts.rate = 1;
     if (opts.rate < 1 && Math.random(1) >= opts.rate) {
         // do nothing
         return;
     };
-    if (opts === undefined) opts = {};
     if (opts.fields === undefined) opts.fields = {};
     opts.fields['name'] = name;
     opts.fields['rate'] = opts.rate;
@@ -137,8 +138,28 @@ MetlogClient.prototype.timer_send = function(elapsed, name, opts) {
 
 MetlogClient.prototype.timer = function(fn, name, opts) {
     // opts = timestamp, logger, severity, fields, rate
+
+    var NoOpTimer = function() {
+        return null;
+    }
+
+    // Check if this is a disabled timer
+    if (_.contains(this.disabledTimers, name) || _.contains(this.disabledTimers, '*'))
+    {
+        return NoOpTimer;
+    }
+
+    // Check rate to see if we need to skip this
+    if ((opts.rate < 1.0) && (Math.random() >= opts.rate))
+    {
+        return NoOpTimer;
+    }
+
+    //
+    //
     if (opts === undefined) opts = {};
     var currentClient = this;
+
     return function() {
         var startTime = new Date().getTime();
         // The decorated function may yield during invocation
@@ -186,3 +207,4 @@ MetlogClient.prototype.critical = function(msg, opts) {
 exports.IsoDateString = IsoDateString;
 exports.MetlogClient = MetlogClient;
 exports.clientFromJsonConfig = config.clientFromJsonConfig;
+exports.SEVERITY = SEVERITY;

@@ -23,9 +23,11 @@ var restify = require('restify');
 
 var config = {
     'sender': {'factory': './example/config_imports:makeMockSender' },
-     'logger': 'test',
-     'filters': [['./example/config_imports:payloadIsFilterProvider' , {'payload': 'nay!'}]],
-     'plugins': {'showLogger': {'provider': './example/config_imports:showLoggerProvider',
+    'logger': 'test',
+    'severity': metlog.SEVERITY.INFORMATIONAL,
+    'disabledTimers': ['disabled_timer_name'],
+    'filters': [['./example/config_imports:payloadIsFilterProvider' , {'payload': 'nay!'}]],
+    'plugins': {'showLogger': {'provider': './example/config_imports:showLoggerProvider',
                                 'label': 'some-label-thing' }}
 };
 var jsonConfig = JSON.stringify(config);

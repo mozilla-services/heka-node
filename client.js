@@ -118,6 +118,11 @@ MetlogClient.prototype.incr = function(name, opts, sample_rate) {
     opts.payload = String(opts.count);
     opts.fields['name'] = name;
     opts.fields['rate'] = sample_rate;
+
+    if (sample_rate < 1 && Math.random(1) >= sample_rate) {
+        // do nothing
+        return;
+    };
     this.metlog('counter', opts);
 };
 

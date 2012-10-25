@@ -10,3 +10,5 @@ Installing:
 Running tests :
 
 	make tests
+
+Full documentation is available at http://metlog-node.rtfd.org

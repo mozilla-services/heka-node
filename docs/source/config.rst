@@ -57,14 +57,27 @@ disabledTimers
   having deactivated timers will be very small. Note that the various timer ids
   should be newline separated.
 
-global
-  Any configuration value within the `global` namespace represents an
-  option that is global to all Metlog clients process-wide and not
-  just the client being configured presently.
 
 filters
   You can configure client side filters to restrict messages from
   going to the server.
 
-TODO: show a pathologically overly configured factory
+The following snippet demonstrates settings all optional parameters in
+the metlog client ::
 
+    var config = {
+        'sender': {'factory': './example/config_imports:makeMockSender' },
+        'logger': 'test',
+        'severity': metlog.SEVERITY.INFORMATIONAL,
+        'disabledTimers': ['disabled_timer_name'],
+        'filters': [['./example/config_imports:payloadIsFilterProvider' , {'payload': 'nay!'}]],
+        'plugins': {'showLogger': {'provider': './example/config_imports:showLoggerProvider',
+                                    'label': 'some-label-thing' }}
+    };
+    var jsonConfig = JSON.stringify(config);
+    var client = metlog.clientFromJsonConfig(jsonConfig);
+
+
+You can find more runnable code samples at
+http://github.com/mozilla-services/metlog-node/ in the examples
+subdirectory.

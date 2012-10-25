@@ -1,6 +1,5 @@
 A javascript library for generating and sending metrics logging to a metlog listener.
 
-
 Installing:
 
     Source Install:
@@ -10,4 +9,4 @@ Installing:
 
 Running tests :
 
-	jasmine-node tests
+	make tests

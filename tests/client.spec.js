@@ -15,9 +15,10 @@
  */
 "use strict";
 
+var _ = require('underscore');
 var sys = require('util');
-var module = require('../client.js');
-
+var os = require('os');
+var metlog = require('metlog');
 
 describe('client', function() {
     var mockSender = {
@@ -31,12 +32,16 @@ describe('client', function() {
 
     var loggerVal = 'bogus';
     var client;
-    var isoConvert = module.IsoDateString
+    var isoConvert = metlog.IsoDateString
 
     beforeEach(function() {
         mockSender.sent = 0;
         mockSender.msgs = [];
-        client = new module.MetlogClient(mockSender, loggerVal);
+        client = new metlog.MetlogClient(mockSender,
+            loggerVal,
+            metlog.SEVERITY.INFORMATIONAL,
+            ['disabled_timer_name']
+            );
     });
 
     function block(ms) {
@@ -64,8 +69,7 @@ describe('client', function() {
     it('initializes w alternate defaults', function() {
         var otherLoggerVal = 'sugob';
         var otherSeverity = 3;
-        var otherClient = new module.MetlogClient(mockSender, otherLoggerVal,
-                                            otherSeverity);
+        var otherClient = new metlog.MetlogClient(mockSender, otherLoggerVal, otherSeverity);
         expect(otherClient.sender).toBe(mockSender);
         expect(otherClient.logger).toEqual(otherLoggerVal);
         expect(otherClient.severity).toEqual(otherSeverity);
@@ -82,6 +86,8 @@ describe('client', function() {
         expect(msg.type).toEqual(type);
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(loggerVal);
+        expect(msg.metlog_pid).toEqual(process.pid);
+        expect(msg.metlog_hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(6);
         expect(msg.payload).toEqual(payload);
         expect(msg.fields).toEqual({});
@@ -96,8 +102,10 @@ describe('client', function() {
         expect(msg.type).toEqual('counter');
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(loggerVal);
+        expect(msg.metlog_pid).toEqual(process.pid);
+        expect(msg.metlog_hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(6);
-        expect(msg.fields).toEqual({'name': name});
+        expect(msg.fields).toEqual({'name': name, 'rate': 1.0});
         expect(msg.payload).toEqual('1');
     });
 
@@ -112,8 +120,10 @@ describe('client', function() {
         expect(msg.type).toEqual('counter');
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(loggerVal);
+        expect(msg.metlog_pid).toEqual(process.pid);
+        expect(msg.metlog_hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(6);
-        expect(msg.fields).toEqual({'name': name});
+        expect(msg.fields).toEqual({'name': name, 'rate': 1.0});
         expect(msg.payload).toEqual('3');
     });
 
@@ -122,31 +132,54 @@ describe('client', function() {
         var name = 'timed name';
         var elapsed = 35;
         var diffLogger = 'different'
-        client.timed(elapsed, name, {'timestamp': timestamp,
+        client.timer_send(elapsed, name, {'timestamp': timestamp,
                                      'logger': diffLogger});
         expect(mockSender.sent).toEqual(1);
         var msg = mockSender.msgs[mockSender.msgs.length - 1];
         expect(msg.type).toEqual('timer');
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(diffLogger);
+        expect(msg.metlog_pid).toEqual(process.pid);
+        expect(msg.metlog_hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(6);
         expect(msg.fields).toEqual({'name': name,
                                     'rate': 1});
         expect(msg.payload).toEqual(String(elapsed));
     });
 
+    it('honors incr rate', function() {
+        var timestamp = new Date();
+        var name = 'counter name';
+
+        var rate = 0.1;
+        var repeats = 1000;
+        for (var i=0; i < repeats; i++) {
+            client.incr(name, {'timestamp': timestamp}, rate);
+        }
+        // this is a very weak test, w/ a small probability of failing incorrectly :(
+
+        // we shouldn't get *twice* as many messages as the upper
+        // limit
+        expect(mockSender.sent).toBeLessThan(repeats * rate * 2);
+        expect(mockSender.sent).toBeGreaterThan(0);
+    });
+
     it('honors timer rate', function() {
         var timestamp = new Date();
         var name = 'timed name';
         var elapsed = 35;
-        var rate = 0.01;
-        var repeats = 10;
+        var rate = 0.1;
+        var repeats = 1000;
         for (var i=0; i < repeats; i++) {
-            client.timed(elapsed, name, {'timestamp': timestamp,
+            client.timer_send(elapsed, name, {'timestamp': timestamp,
                                          'rate': rate});
         };
         // this is a very weak test, w/ a small probability of failing incorrectly :(
-        expect(mockSender.sent).toBeLessThan(repeats);
+
+        // we shouldn't get *twice* as many messages as the upper
+        // limit
+        expect(mockSender.sent).toBeLessThan(repeats * rate * 2);
+        expect(mockSender.sent).toBeGreaterThan(0);
     });
 
     it('decorates w timer correctly', function() {
@@ -167,6 +200,8 @@ describe('client', function() {
         expect(msg.type).toEqual('timer');
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(loggerVal);
+        expect(msg.metlog_pid).toEqual(process.pid);
+        expect(msg.metlog_hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(diffSeverity);
         expect(msg.fields).toEqual({'name': name,
                                     'rate': 1});
@@ -179,6 +214,8 @@ describe('client', function() {
         expect(msg.type).toEqual('timer');
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(loggerVal);
+        expect(msg.metlog_pid).toEqual(process.pid);
+        expect(msg.metlog_hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(diffSeverity);
         expect(msg.fields).toEqual({'name': name,
                                     'rate': 1});
@@ -197,7 +234,7 @@ describe('client', function() {
         expect(mockSender.msgs[1].type).toEqual('bawlp');
     });
 
-    it('supports dyamic methods', function() {
+    it('supports dynamic methods', function() {
         var sendFoo = function(msg) {
             this.metlog('foo', {'payload': 'FOO: ' + msg});
         };
@@ -223,4 +260,60 @@ describe('client', function() {
         expect(mockSender.msgs[0].type).toEqual('foo');
         expect(mockSender.msgs[0].payload).toEqual('FOO: bar');
     });
+
+    it("provides simple oldstyle logging methods", function() {
+        var msg_pairs = [[client.debug, "debug_msg"],
+        [client.info, "info_msg"],
+        [client.warn, "warn_msg"],
+        [client.error, "err_msg"],
+        [client.exception, "exc_msg"],
+        [client.critical, "crit_msg"]]
+
+        _.each(msg_pairs, function(elem) {
+            var method = elem[0];
+            var data = elem[1];
+            method.call(client, data)
+            expect(_.last(client.sender.msgs).payload).toEqual(data);
+        });
+        expect(client.sender.msgs.length).toEqual(6);
+    });
+
+    it('honors disabledTimers', function() {
+        var minWait = 40;  // in milliseconds
+        var sleeper = function() {
+            block(minWait);
+        };
+        var name = 'disabled_timer_name';
+        var timestamp = new Date();
+        var diffSeverity = 4;
+        // wrap it
+        sleeper = client.timer(sleeper, name, {'timestamp': timestamp,
+                                               'severity': diffSeverity,});
+        // call it
+        sleeper();
+        expect(mockSender.sent).toEqual(0);
+    });
+
+    it('honors wildcard disabledTimers', function() {
+        client = new metlog.MetlogClient(mockSender,
+            loggerVal,
+            metlog.SEVERITY.INFORMATIONAL,
+            ['*']
+            );
+        var minWait = 40;  // in milliseconds
+        var sleeper = function() {
+            block(minWait);
+        };
+        var name = 'any timer name';
+        var timestamp = new Date();
+        var diffSeverity = 4;
+        // wrap it
+        sleeper = client.timer(sleeper, name, {'timestamp': timestamp,
+                                               'severity': diffSeverity,});
+        // call it
+        sleeper();
+        expect(mockSender.sent).toEqual(0);
+    });
+
+
 });

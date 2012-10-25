@@ -153,7 +153,7 @@ describe('config', function() {
     });
 
     it('sets up plugins', function() {
-        var customLabel = 'LOGGER, YO'
+        var customLabel = 'LOGGER, YO';
         var config = {
             'sender': {'factory': makeMockSenderString},
             'logger': 'test',
@@ -184,6 +184,41 @@ describe('config', function() {
         expect(client._dynamicMethods['incr']).not.toBe(undefined);
         expect(client.incr()).toEqual(customLabel+': '+'test');
     });
+
+    it('raises errors when no factory attribute exists', function() {
+        var config = {
+            'sender': {}
+        };
+        var jsonConfig = JSON.stringify(config);
+        expect(function() {
+            configModule.clientFromJsonConfig(jsonConfig);
+        }).toThrow(new Error("factory attribute is missing from config"));
+
+    });
+
+    it('sets up filters and plugins', function() {
+        var customLabel = 'LOGGER, YO'
+        var filterConfig = {'payload': 'nay!'};
+        var config = {
+            'sender': {'factory': makeMockSenderString},
+            'logger': 'test',
+            'filters': [[payloadIsFilterString, filterConfig]],
+            'plugins': {'showLogger': {'provider': showLoggerProviderString,
+                                       'label': customLabel}}
+        };
+        var jsonConfig = JSON.stringify(config);
+        var client = configModule.clientFromJsonConfig(jsonConfig);
+        var filters = client.filters;
+        expect(filters.length).toEqual(1);
+        client.metlog('test', {'payload': 'aye'});
+        client.metlog('test', {'payload': 'nay!'});
+        expect(client.sender.msgs.length).toEqual(1);
+        expect(client.sender.msgs[0].payload).toEqual('aye');
+        expect(client._dynamicMethods['showLogger']).not.toBe(undefined);
+        expect(client.showLogger()).toEqual(customLabel+': '+'test');
+
+    });
+
 });
 
 exports.makeMockSender = makeMockSender;

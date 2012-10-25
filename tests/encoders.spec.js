@@ -10,15 +10,23 @@
  *
  * Contributor(s):
  *  Rob Miller (rmiller@mozilla.com)
+ *  Victor Ng (vng@mozilla.com)
  *
  ***** END LICENSE BLOCK *****
  */
 "use strict";
-var zmq = require('./zmq.js');
-var dev = require('./dev.js');
-var udp = require('./udp.js');
 
-exports.fileSenderFactory = dev.fileSenderFactory;
-exports.stdoutSenderFactory = dev.stdoutSenderFactory;
-exports.udpSenderFactory = udp.udpSenderFactory;
-exports.zmqPubSenderFactory = zmq.zmqPubSenderFactory;
+var msgpack = require('msgpack');
+var encoders = require('../senders/encoders');
+
+describe('msgpack', function() {
+
+    if (typeof msgpack !== 'undefined') {
+        it('encodes msgpack correctly', function() {
+            var expected = {foo: 42};
+            var serialized = encoders.msgpackEncoder(expected);
+            expect(msgpack.unpack(serialized)).toEqual(expected);
+        });
+    }
+
+});

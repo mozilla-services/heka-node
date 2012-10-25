@@ -15,7 +15,11 @@
  */
 "use strict";
 
-var ZmqPubSender = function(bindstrs, queueLength) {
+var base = require('./base');
+
+var ZmqPubSender = function(bindstrs, queueLength, encoder) {
+    this.init(encoder);
+
     if (typeof(bindstrs) == "string") {
         bindstrs = [bindstrs];
     };
@@ -27,16 +31,19 @@ var ZmqPubSender = function(bindstrs, queueLength) {
         publisher.bind(bindstrs[i]);
     };
     this.publisher = publisher;
-};
 
-ZmqPubSender.prototype.sendMessage = function(msg) {
-    var jsonMsg = JSON.stringify(msg);
-    this.publisher.send(jsonMsg)
-};
+    this._send_msg = function(text) {
+        this.publisher.send(text)
+    };
 
-function zmqPubSenderFactory(bindstrs, queueLength) {
+};
+base.abstractSender.call(ZmqPubSender.prototype)
+
+
+function zmqPubSenderFactory(config) {
+    var bindstrs = config['bindstrs'];
+    var queueLength = config['queueLength'];
     return new ZmqPubSender(bindstrs, queueLength);
 };
 
-exports.ZmqPubSender = ZmqPubSender;
 exports.zmqPubSenderFactory = zmqPubSenderFactory;

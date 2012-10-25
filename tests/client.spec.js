@@ -147,6 +147,23 @@ describe('client', function() {
         expect(msg.payload).toEqual(String(elapsed));
     });
 
+    it('honors incr rate', function() {
+        var timestamp = new Date();
+        var name = 'counter name';
+
+        var rate = 0.1;
+        var repeats = 1000;
+        for (var i=0; i < repeats; i++) {
+            client.incr(name, {'timestamp': timestamp}, rate);
+        }
+        // this is a very weak test, w/ a small probability of failing incorrectly :(
+
+        // we shouldn't get *twice* as many messages as the upper
+        // limit
+        expect(mockSender.sent).toBeLessThan(repeats * rate * 2);
+        expect(mockSender.sent).toBeGreaterThan(0);
+    });
+
     it('honors timer rate', function() {
         var timestamp = new Date();
         var name = 'timed name';

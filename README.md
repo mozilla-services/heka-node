@@ -1,3 +1,5 @@
+[![Build Status](https://secure.travis-ci.org/mozilla-services/metlog-node.png)](http://travis-ci.org/mozilla-services/metlog-node)
+
 A javascript library for generating and sending metrics logging to a metlog listener.
 
 Installing:
@@ -9,6 +11,6 @@ Installing:
 
 Running tests :
 
-	make tests
+    make tests
 
 Full documentation is available at http://metlog-node.rtfd.org

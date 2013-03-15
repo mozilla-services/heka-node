@@ -16,7 +16,7 @@
  */
 "use strict"
 
-var metlog = require('metlog');
+var heka = require('heka');
 var _ = require('underscore');
 var restify = require('restify');
 
@@ -24,12 +24,12 @@ var restify = require('restify');
 var config = {
     'sender': {'factory': './example/config_imports:makeMockSender' },
     'logger': 'test',
-    'severity': metlog.SEVERITY.INFORMATIONAL,
+    'severity': heka.SEVERITY.INFORMATIONAL,
     'disabledTimers': ['disabled_timer_name'],
     'filters': [['./example/config_imports:payloadIsFilterProvider' , {'payload': 'nay!'}]],
     'plugins': {'showLogger': {'provider': './example/config_imports:showLoggerProvider',
                                 'label': 'some-label-thing' }}
 };
 var jsonConfig = JSON.stringify(config);
-var client = metlog.clientFromJsonConfig(jsonConfig);
+var client = heka.clientFromJsonConfig(jsonConfig);
 console.log(client);

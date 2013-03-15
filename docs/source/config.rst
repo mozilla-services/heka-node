@@ -1,34 +1,34 @@
-Metlog Configuration
+Heka Configuration
 --------------------
 
-To assist with getting a working Metlog set up, metlog-node provides a
+To assist with getting a working Heka set up, heka-node provides a
 :doc:`api/config` module which will take declarative configuration info in
-JSON format and use it to configure a MetlogClient instance. 
+JSON format and use it to configure a HekaClient instance. 
 
 
 JSON format
 ===========
 
 The `clientFromJsonConfig` function of the config module is used to
-create a MetlogClient instance.
+create a HekaClient instance.
 
-A minimal configuration that will instantiate a working Metlog client
+A minimal configuration that will instantiate a working Heka client
 may look like this ::
 
-    var metlog = require('metlog');
-    var METLOG_CONF = {
-        'sender': {'factory': 'metlog/Senders:udpSenderFactory',
+    var heka = require('heka');
+    var heka_CONF = {
+        'sender': {'factory': 'heka/Senders:udpSenderFactory',
                    'hosts': '192.168.20.2',
                    'ports': 5565},
     };
-    var jsonConfig = JSON.stringify(METLOG_CONF);
-    var log_client = metlog.clientFromJsonConfig(jsonConfig);
+    var jsonConfig = JSON.stringify(heka_CONF);
+    var log_client = heka.clientFromJsonConfig(jsonConfig);
 
 There are several optional parameters you may use to specialize the
-metlog-node client.  A detailed description of each option follows:
+heka-node client.  A detailed description of each option follows:
 
 logger
-  Each metlog message that goes out contains a `logger` value, which is simply
+  Each heka message that goes out contains a `logger` value, which is simply
   a string token meant to identify the source of the message, usually the
   name of the application that is running. This can be specified separately for
   each message that is sent, but the client supports a default value which will
@@ -38,7 +38,7 @@ logger
   suggested that a value be set.
 
 severity
-  Similarly, each metlog message specifies a `severity` value corresponding to
+  Similarly, each heka message specifies a `severity` value corresponding to
   the integer severity values defined by `RFC 3164
   <https://www.ietf.org/rfc/rfc3164.txt>`_. And, again, while each message can
   set its own severity value, if one is omitted the client's default value will
@@ -46,13 +46,13 @@ severity
   will be 6, "Informational".
 
 disabledTimers
-  Metlog natively supports "timer" behavior, which will calculate the amount of
+  Heka natively supports "timer" behavior, which will calculate the amount of
   elapsed time taken by an operation and send that data along as a message to
   the back end. Each timer has a string token identifier. Because the act of
   calculating code performance actually impacts code performance, it is
   sometimes desirable to be able to activate and deactivate timers on a case by
   case basis. The `disabledTimers` value specifies a set of timer ids for
-  which the client should NOT actually generate messages. Metlog will attempt
+  which the client should NOT actually generate messages. Heka will attempt
   to minimize the run-time impact of disabled timers, so the price paid for
   having deactivated timers will be very small. Note that the various timer ids
   should be newline separated.
@@ -63,21 +63,21 @@ filters
   going to the server.
 
 The following snippet demonstrates settings all optional parameters in
-the metlog client ::
+the heka client ::
 
     var config = {
         'sender': {'factory': './example/config_imports:makeMockSender' },
         'logger': 'test',
-        'severity': metlog.SEVERITY.INFORMATIONAL,
+        'severity': heka.SEVERITY.INFORMATIONAL,
         'disabledTimers': ['disabled_timer_name'],
         'filters': [['./example/config_imports:payloadIsFilterProvider' , {'payload': 'nay!'}]],
         'plugins': {'showLogger': {'provider': './example/config_imports:showLoggerProvider',
                                     'label': 'some-label-thing' }}
     };
     var jsonConfig = JSON.stringify(config);
-    var client = metlog.clientFromJsonConfig(jsonConfig);
+    var client = heka.clientFromJsonConfig(jsonConfig);
 
 
 You can find more runnable code samples at
-http://github.com/mozilla-services/metlog-node/ in the examples
+http://github.com/mozilla-services/heka-node/ in the examples
 subdirectory.

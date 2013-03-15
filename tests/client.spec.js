@@ -18,7 +18,7 @@
 var _ = require('underscore');
 var sys = require('util');
 var os = require('os');
-var metlog = require('../client.js');
+var heka = require('../client.js');
 
 describe('client', function() {
     var mockSender = {
@@ -32,14 +32,14 @@ describe('client', function() {
 
     var loggerVal = 'bogus';
     var client;
-    var isoConvert = metlog.IsoDateString
+    var isoConvert = heka.IsoDateString
 
     beforeEach(function() {
         mockSender.sent = 0;
         mockSender.msgs = [];
-        client = new metlog.MetlogClient(mockSender,
+        client = new heka.HekaClient(mockSender,
             loggerVal,
-            metlog.SEVERITY.INFORMATIONAL,
+            heka.SEVERITY.INFORMATIONAL,
             ['disabled_timer_name']
             );
     });
@@ -69,7 +69,7 @@ describe('client', function() {
     it('initializes w alternate defaults', function() {
         var otherLoggerVal = 'sugob';
         var otherSeverity = 3;
-        var otherClient = new metlog.MetlogClient(mockSender, otherLoggerVal, otherSeverity);
+        var otherClient = new heka.HekaClient(mockSender, otherLoggerVal, otherSeverity);
         expect(otherClient.sender).toBe(mockSender);
         expect(otherClient.logger).toEqual(otherLoggerVal);
         expect(otherClient.severity).toEqual(otherSeverity);
@@ -79,15 +79,15 @@ describe('client', function() {
         var timestamp = new Date();
         var type = 'vanilla'
         var payload = 'drippy dreamy icy creamy';
-        client.metlog(type, {'timestamp': timestamp,
+        client.heka(type, {'timestamp': timestamp,
                              'payload': payload});
         expect(mockSender.sent).toEqual(1);
         var msg = mockSender.msgs[mockSender.msgs.length - 1];
         expect(msg.type).toEqual(type);
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(loggerVal);
-        expect(msg.metlog_pid).toEqual(process.pid);
-        expect(msg.metlog_hostname).toEqual(os.hostname());
+        expect(msg.heka_pid).toEqual(process.pid);
+        expect(msg.heka_hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(6);
         expect(msg.payload).toEqual(payload);
         expect(msg.fields).toEqual({});
@@ -102,8 +102,8 @@ describe('client', function() {
         expect(msg.type).toEqual('counter');
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(loggerVal);
-        expect(msg.metlog_pid).toEqual(process.pid);
-        expect(msg.metlog_hostname).toEqual(os.hostname());
+        expect(msg.heka_pid).toEqual(process.pid);
+        expect(msg.heka_hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(6);
         expect(msg.fields).toEqual({'name': name, 'rate': 1.0});
         expect(msg.payload).toEqual('1');
@@ -120,8 +120,8 @@ describe('client', function() {
         expect(msg.type).toEqual('counter');
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(loggerVal);
-        expect(msg.metlog_pid).toEqual(process.pid);
-        expect(msg.metlog_hostname).toEqual(os.hostname());
+        expect(msg.heka_pid).toEqual(process.pid);
+        expect(msg.heka_hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(6);
         expect(msg.fields).toEqual({'name': name, 'rate': 1.0});
         expect(msg.payload).toEqual('3');
@@ -139,8 +139,8 @@ describe('client', function() {
         expect(msg.type).toEqual('timer');
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(diffLogger);
-        expect(msg.metlog_pid).toEqual(process.pid);
-        expect(msg.metlog_hostname).toEqual(os.hostname());
+        expect(msg.heka_pid).toEqual(process.pid);
+        expect(msg.heka_hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(6);
         expect(msg.fields).toEqual({'name': name,
                                     'rate': 1});
@@ -200,8 +200,8 @@ describe('client', function() {
         expect(msg.type).toEqual('timer');
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(loggerVal);
-        expect(msg.metlog_pid).toEqual(process.pid);
-        expect(msg.metlog_hostname).toEqual(os.hostname());
+        expect(msg.heka_pid).toEqual(process.pid);
+        expect(msg.heka_hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(diffSeverity);
         expect(msg.fields).toEqual({'name': name,
                                     'rate': 1});
@@ -214,8 +214,8 @@ describe('client', function() {
         expect(msg.type).toEqual('timer');
         expect(msg.timestamp).toEqual(isoConvert(timestamp));
         expect(msg.logger).toEqual(loggerVal);
-        expect(msg.metlog_pid).toEqual(process.pid);
-        expect(msg.metlog_hostname).toEqual(os.hostname());
+        expect(msg.heka_pid).toEqual(process.pid);
+        expect(msg.heka_hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(diffSeverity);
         expect(msg.fields).toEqual({'name': name,
                                     'rate': 1});
@@ -225,10 +225,10 @@ describe('client', function() {
     it('supports filter functions', function() {
         var origFilters = client.filters;
         client.filters = [typeFilter]
-        client.metlog('foo');
-        client.metlog('baz');
-        client.metlog('bar');
-        client.metlog('bawlp');
+        client.heka('foo');
+        client.heka('baz');
+        client.heka('bar');
+        client.heka('bawlp');
         expect(mockSender.sent).toEqual(2)
         expect(mockSender.msgs[0].type).toEqual('baz');
         expect(mockSender.msgs[1].type).toEqual('bawlp');
@@ -236,7 +236,7 @@ describe('client', function() {
 
     it('supports dynamic methods', function() {
         var sendFoo = function(msg) {
-            this.metlog('foo', {'payload': 'FOO: ' + msg});
+            this.heka('foo', {'payload': 'FOO: ' + msg});
         };
         client.addMethod('sendFoo', sendFoo);
         expect(client._dynamicMethods).toEqual({'sendFoo': sendFoo});
@@ -248,7 +248,7 @@ describe('client', function() {
 
     it('overrides properties correctly', function() {
         var sendFoo = function(msg) {
-            this.metlog('foo', {'payload': 'FOO: ' + msg});
+            this.heka('foo', {'payload': 'FOO: ' + msg});
         };
         expect(function() {
             client.addMethod('incr', sendFoo)
@@ -295,9 +295,9 @@ describe('client', function() {
     });
 
     it('honors wildcard disabledTimers', function() {
-        client = new metlog.MetlogClient(mockSender,
+        client = new heka.HekaClient(mockSender,
             loggerVal,
-            metlog.SEVERITY.INFORMATIONAL,
+            heka.SEVERITY.INFORMATIONAL,
             ['*']
             );
         var minWait = 40;  // in milliseconds

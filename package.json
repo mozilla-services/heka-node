@@ -1,12 +1,12 @@
 {
     "author": "Rob Miller <rmiller@mozilla.com>",
-    "name": "metlog",
+    "name": "heka",
     "description": "Metrics logging",
     "version": "0.1.0",
-    "homepage": "https://github.com/mozilla-services/metlog-node",
+    "homepage": "https://github.com/mozilla-services/heka-node",
     "repository": {
         "type": "git",
-        "url": "https://github.com/mozilla-services/metlog-node.git"
+        "url": "https://github.com/mozilla-services/heka-node.git"
     },
     "main": "./client.js",
     "engines": {

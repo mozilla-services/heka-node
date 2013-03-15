@@ -1,7 +1,7 @@
-Using the metlog client
+Using the heka client
 -----------------------
 
-Basic usage of the metlog client for timing functions is straight
+Basic usage of the heka client for timing functions is straight
 forward.  Just decorate your function with client.timer and you'll get
 timing events ::
 

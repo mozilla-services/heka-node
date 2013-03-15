@@ -9,19 +9,19 @@
  */
 "use strict";
 
-var metlog = require('metlog');
+var heka = require('heka');
 var _ = require('underscore');
 var restify = require('restify');
 
-var METLOG_CONF = {
-    'sender': {'factory': 'metlog/Senders:udpSenderFactory',
+var heka_CONF = {
+    'sender': {'factory': 'heka/Senders:udpSenderFactory',
                'hosts': '192.168.20.2',
                'ports': 5565},
     'logger': 'test',
     'severity': 5
 };
-var jsonConfig = JSON.stringify(METLOG_CONF);
-var log = metlog.clientFromJsonConfig(jsonConfig);
+var jsonConfig = JSON.stringify(heka_CONF);
+var log = heka.clientFromJsonConfig(jsonConfig);
 
 var server = restify.createServer({
       name: 'myapp',

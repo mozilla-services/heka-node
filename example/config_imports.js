@@ -17,7 +17,7 @@
 
 "use strict"
 
-var metlog = require('metlog');
+var heka = require('heka');
 var _ = require('underscore');
 
 var showLoggerProvider = function(pluginConfig) {

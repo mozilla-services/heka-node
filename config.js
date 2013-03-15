@@ -84,7 +84,7 @@ var clientFromJsonConfig = function(config, client, clearGlobal) {
     };
 
     if (typeof(client) === 'undefined') {
-        client = new clientModule.MetlogClient(sender, logger, severity,
+        client = new clientModule.HekaClient(sender, logger, severity,
                                                disabledTimers, filters);
     } else {
         client.setup(sender, logger, severity, disabledTimers, filters);

@@ -41,12 +41,12 @@ function IsoDateString(d) {
         + pad(d.getUTCMinutes()) + ':'
         + pad(d.getUTCSeconds()) + 'Z'}
 
-var MetlogClient = function(sender, logger, severity, disabledTimers, filters) 
+var HekaClient = function(sender, logger, severity, disabledTimers, filters) 
 {
     this.setup(sender, logger, severity, disabledTimers, filters);
 };
 
-MetlogClient.prototype.setup = function(sender, logger, severity, disabledTimers,
+HekaClient.prototype.setup = function(sender, logger, severity, disabledTimers,
         filters)
 {
     this.sender = sender;
@@ -61,7 +61,7 @@ MetlogClient.prototype.setup = function(sender, logger, severity, disabledTimers
 
 };
 
-MetlogClient.prototype._sendMessage = function(msg) {
+HekaClient.prototype._sendMessage = function(msg) {
     // Apply any filters and pass on the sender if message gets through
     for (var i=0; i<this.filters.length; i++) {
         var filter = this.filters[i];
@@ -72,7 +72,7 @@ MetlogClient.prototype._sendMessage = function(msg) {
     this.sender.sendMessage(msg);
 };
 
-MetlogClient.prototype.metlog = function(type, opts) {
+HekaClient.prototype.heka = function(type, opts) {
     // opts = timestamp, logger, severity, payload, fields
     if (opts === undefined) opts = {};
     if (opts.timestamp === undefined) opts.timestamp = new Date();
@@ -92,13 +92,13 @@ MetlogClient.prototype.metlog = function(type, opts) {
         'logger': opts.logger, 'severity': opts.severity,
         'payload': opts.payload, 'fields': opts.fields,
         'env_version': env_version,
-        'metlog_pid': opts.pid,
-        'metlog_hostname': opts.hostname
+        'heka_pid': opts.pid,
+        'heka_hostname': opts.hostname
     };
     this._sendMessage(fullMsg);
 };
 
-MetlogClient.prototype.addMethod = function(name, method, override) {
+HekaClient.prototype.addMethod = function(name, method, override) {
     if (typeof(method) !== 'function') {
         throw new Error('`method` argument must be a function');
     };
@@ -109,7 +109,7 @@ MetlogClient.prototype.addMethod = function(name, method, override) {
     this[name] = method;
 };
 
-MetlogClient.prototype.incr = function(name, opts, sample_rate) {
+HekaClient.prototype.incr = function(name, opts, sample_rate) {
     // opts = count, timestamp, logger, severity, fields
     if (opts === undefined) opts = {};
     if (opts.count === undefined) opts.count = 1;
@@ -123,10 +123,10 @@ MetlogClient.prototype.incr = function(name, opts, sample_rate) {
         // do nothing
         return;
     };
-    this.metlog('counter', opts);
+    this.heka('counter', opts);
 };
 
-MetlogClient.prototype.timer_send = function(elapsed, name, opts) {
+HekaClient.prototype.timer_send = function(elapsed, name, opts) {
     // opts = timestamp, logger, severity, fields, rate
     if (opts === undefined) opts = {};
     if (opts.rate === undefined) opts.rate = 1;
@@ -138,10 +138,10 @@ MetlogClient.prototype.timer_send = function(elapsed, name, opts) {
     opts.fields['name'] = name;
     opts.fields['rate'] = opts.rate;
     opts.payload = String(elapsed);
-    this.metlog('timer', opts);
+    this.heka('timer', opts);
 };
 
-MetlogClient.prototype.timer = function(fn, name, opts) {
+HekaClient.prototype.timer = function(fn, name, opts) {
     // opts = timestamp, logger, severity, fields, rate
 
     var NoOpTimer = function() {
@@ -178,38 +178,38 @@ MetlogClient.prototype.timer = function(fn, name, opts) {
     };
 };
 
-MetlogClient.prototype._oldstyle = function(severity, msg, opts) {
+HekaClient.prototype._oldstyle = function(severity, msg, opts) {
     if (opts === undefined) opts = {};
     if (opts.fields === undefined) opts.fields = {};
     opts.payload = String(msg);
-    this.metlog('oldstyle', opts);
+    this.heka('oldstyle', opts);
 }
 
-MetlogClient.prototype.debug = function(msg, opts) {
+HekaClient.prototype.debug = function(msg, opts) {
     this._oldstyle(SEVERITY.DEBUG, msg, opts);
 }
 
-MetlogClient.prototype.info = function(msg, opts) {
+HekaClient.prototype.info = function(msg, opts) {
     this._oldstyle(SEVERITY.INFORMATIONAL, msg, opts);
 }
 
-MetlogClient.prototype.warn = function(msg, opts) {
+HekaClient.prototype.warn = function(msg, opts) {
     this._oldstyle(SEVERITY.WARNING, msg, opts);
 }
 
-MetlogClient.prototype.error = function(msg, opts) {
+HekaClient.prototype.error = function(msg, opts) {
     this._oldstyle(SEVERITY.ERROR, msg, opts);
 }
 
-MetlogClient.prototype.exception = function(msg, opts) {
+HekaClient.prototype.exception = function(msg, opts) {
     this._oldstyle(SEVERITY.ALERT, msg, opts);
 }
 
-MetlogClient.prototype.critical = function(msg, opts) {
+HekaClient.prototype.critical = function(msg, opts) {
     this._oldstyle(SEVERITY.CRITICAL, msg, opts);
 }
 
 exports.IsoDateString = IsoDateString;
-exports.MetlogClient = MetlogClient;
+exports.HekaClient = HekaClient;
 exports.clientFromJsonConfig = config.clientFromJsonConfig;
 exports.SEVERITY = SEVERITY;

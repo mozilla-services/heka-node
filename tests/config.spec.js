@@ -77,7 +77,7 @@ describe('config', function() {
         expect(client.severity).toEqual(config.severity);
         var msgOpts = {'payload': 'whadidyusay?'};
         var type = 'test-type'
-        client.metlog(type, msgOpts);
+        client.heka(type, msgOpts);
         expect(client.sender.msgs.length).toEqual(1);
         var msg = client.sender.msgs[0]
         expect(msg.type).toEqual(type);
@@ -146,8 +146,8 @@ describe('config', function() {
         var client = configModule.clientFromJsonConfig(jsonConfig);
         var filters = client.filters;
         expect(filters.length).toEqual(1);
-        client.metlog('test', {'payload': 'aye'});
-        client.metlog('test', {'payload': 'nay!'});
+        client.heka('test', {'payload': 'aye'});
+        client.heka('test', {'payload': 'nay!'});
         expect(client.sender.msgs.length).toEqual(1);
         expect(client.sender.msgs[0].payload).toEqual('aye');
     });
@@ -210,8 +210,8 @@ describe('config', function() {
         var client = configModule.clientFromJsonConfig(jsonConfig);
         var filters = client.filters;
         expect(filters.length).toEqual(1);
-        client.metlog('test', {'payload': 'aye'});
-        client.metlog('test', {'payload': 'nay!'});
+        client.heka('test', {'payload': 'aye'});
+        client.heka('test', {'payload': 'nay!'});
         expect(client.sender.msgs.length).toEqual(1);
         expect(client.sender.msgs[0].payload).toEqual('aye');
         expect(client._dynamicMethods['showLogger']).not.toBe(undefined);

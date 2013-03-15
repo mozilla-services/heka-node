@@ -15,7 +15,7 @@
  */
 "use strict";
 
-var configModule = require('../config');
+var configModule = require('../config.js');
 
 var mockSender = {
     foo: 'bar',

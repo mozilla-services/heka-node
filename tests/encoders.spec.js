@@ -17,7 +17,7 @@
 "use strict";
 
 var msgpack = require('msgpack');
-var encoders = require('../senders/encoders');
+var encoders = require('../senders/encoders.js');
 
 describe('msgpack', function() {
 

@@ -18,7 +18,7 @@
 var _ = require('underscore');
 var sys = require('util');
 var os = require('os');
-var metlog = require('metlog');
+var metlog = require('../client.js');
 
 describe('client', function() {
     var mockSender = {

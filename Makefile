@@ -1,5 +1,7 @@
-all:
-	npm link .
+all: install test
+
+install:
+	npm install
 
 test:
 	node node_modules/jasmine-node/lib/jasmine-node/cli.js tests

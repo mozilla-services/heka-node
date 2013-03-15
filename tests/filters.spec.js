@@ -15,7 +15,7 @@
  */
 "use strict";
 
-var filters = require('../filters');
+var filters = require('../filters.js');
 
 
 var countTrues = function(filter, msgs) {

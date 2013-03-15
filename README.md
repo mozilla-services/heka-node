@@ -7,10 +7,9 @@ Installing:
     Source Install:
 
         git clone git://github.com/mozilla-services/heka-node.git
-        npm install --dev
+        cd heka-node
+        make
 
-Running tests :
-
-    make tests
+    You should see 33 tests run successfully
 
 Full documentation is available at http://heka-node.rtfd.org

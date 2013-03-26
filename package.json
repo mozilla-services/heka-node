@@ -24,6 +24,6 @@
         "horaa": ">=0.1.1alpha"
     },
     "scripts": {
-            "test": "jasmine-node tests/*.spec.js"
+            "test": "jasmine-node tests"
     }
 }

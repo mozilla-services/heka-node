@@ -10,6 +10,7 @@
  *
  * Contributor(s):
  *  Rob Miller (rmiller@mozilla.com)
+ *  Victor Ng (vng@mozilla.com)
  *
  ***** END LICENSE BLOCK *****
  */
@@ -37,6 +38,11 @@ var resolveName = function(name) {
     var pieces = name.split(':');
     var module = require(pieces[0]);
     var fn = module[pieces[1]];
+
+    if (fn === undefined) {
+        var msg = "ERROR loading: ["+pieces[0]+":" + pieces[1] + "]. Make sure you've exported it properly.";
+        throw new Error(msg);
+    }
     return fn;
 };
 
@@ -52,6 +58,9 @@ var senderFromConfig = function(config) {
     }
 
     var senderFactory = resolveName(config.factory);
+    if (senderFactory === undefined) {
+        throw new Error("Unable to resolve the senderFactory: ["+config.factory+"]")
+    }
     return senderFactory(config);
 };
 

@@ -110,8 +110,8 @@ describe('client', function() {
     });
 
     it('formats isodates properly', function() {
-        var timestamp = new Date(2013,0,1, 2,3,4,50);
-        expect(isoConvert(timestamp)).toEqual("2013-01-01T07:03:04.050000Z");
+        var timestamp = new Date(Date.UTC(2013,0,1,2,3,4,50));
+        expect(isoConvert(timestamp)).toEqual("2013-01-01T02:03:04.050000Z");
     });
 
     it('sends incr different count', function() {

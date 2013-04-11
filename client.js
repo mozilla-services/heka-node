@@ -18,6 +18,7 @@
 var config = require('./config');
 var env_version = '0.8';
 var os = require('os');
+var Senders = require('./senders/index');
 var _ = require('underscore');
 
 // Put a namespace around RFC 3164 syslog messages
@@ -33,13 +34,24 @@ var SEVERITY = {
 }
 
 function IsoDateString(d) {
-    function pad(n) {return n<10 ? '0'+n : n};
+    function zeroFill(number, width)
+    {
+      width -= number.toString().length;
+      if ( width > 0 )
+      {
+        return new Array( width + (/\./.test( number ) ? 2 : 1) ).join( '0' ) + number;
+      }
+      return number + ""; // always return a string
+    }
+
     return d.getUTCFullYear() + '-'
-        + pad(d.getUTCMonth() + 1) + '-'
-        + pad(d.getUTCDate()) + 'T'
-        + pad(d.getUTCHours()) + ':'
-        + pad(d.getUTCMinutes()) + ':'
-        + pad(d.getUTCSeconds()) + 'Z'}
+        + zeroFill(d.getUTCMonth() + 1, 2) + '-'
+        + zeroFill(d.getUTCDate(), 2) + 'T'
+        + zeroFill(d.getUTCHours(), 2) + ':'
+        + zeroFill(d.getUTCMinutes(), 2) + ':'
+        + zeroFill(d.getUTCSeconds(), 2) + "."
+        + zeroFill(d.getUTCMilliseconds() * 1000, 6) + 'Z'
+}
 
 var HekaClient = function(sender, logger, severity, disabledTimers, filters) 
 {
@@ -213,3 +225,4 @@ exports.IsoDateString = IsoDateString;
 exports.HekaClient = HekaClient;
 exports.clientFromJsonConfig = config.clientFromJsonConfig;
 exports.SEVERITY = SEVERITY;
+exports.Senders = Senders;

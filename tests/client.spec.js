@@ -109,6 +109,11 @@ describe('client', function() {
         expect(msg.payload).toEqual('1');
     });
 
+    it('formats isodates properly', function() {
+        var timestamp = new Date(2013,0,1, 2,3,4,50);
+        expect(isoConvert(timestamp)).toEqual("2013-01-01T07:03:04.050000Z");
+    });
+
     it('sends incr different count', function() {
         var timestamp = new Date();
         var name = 'counter name';

@@ -37,7 +37,14 @@ var getattr = function(obj, attr, defaultValue) {
 var resolveName = function(name) {
     var pieces = name.split(':');
     var module = require(pieces[0]);
-    var fn = module[pieces[1]];
+
+    var fn_path = pieces[1].split(".");
+
+    var fn = null;
+    fn = module[fn_path.shift()];
+    for (; fn_path.length > 0;) {
+        fn = fn[fn_path.shift()];
+    }
 
     if (fn === undefined) {
         var msg = "ERROR loading: ["+pieces[0]+":" + pieces[1] + "]. Make sure you've exported it properly.";

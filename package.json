@@ -2,7 +2,7 @@
     "author": "Rob Miller <rmiller@mozilla.com>",
     "name": "heka",
     "description": "Metrics logging",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "homepage": "https://github.com/mozilla-services/heka-node",
     "repository": {
         "type": "git",

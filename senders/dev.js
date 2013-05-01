@@ -16,9 +16,9 @@
 var fs = require('fs');
 var base = require('./base');
 
-var StdoutSender = function(encoder) {
+var StdoutSender = function(encoder, hmc) {
     this.stream = process.stdout;
-    this.init(encoder);
+    this.init(encoder, hmc);
 
     this._send_msg = function(text) {
         this.stream.write(text);
@@ -29,13 +29,14 @@ base.abstractSender.call(StdoutSender.prototype);
 var stdoutSenderFactory = function(config) {
     var config = typeof config !== 'undefined' ? config : {};
     var encoder = config['encoder'];
-    return new StdoutSender(encoder);
+    var hmc = config['hmc'];
+    return new StdoutSender(encoder, hmc);
 };
 
 
-var FileSender = function(filePath, encoder) {
+var FileSender = function(filePath, encoder, hmc) {
     this.stream = fs.createWriteStream(filePath);
-    this.init(encoder);
+    this.init(encoder, hmc);
 
     this._send_msg = function(text) {
         this.stream.write(text);
@@ -43,9 +44,32 @@ var FileSender = function(filePath, encoder) {
 };
 base.abstractSender.call(FileSender.prototype)
 
-var fileSenderFactory = function(filePath, encoder) {
-    return new FileSender(filePath, encoder);
+var fileSenderFactory = function(sender_config) {
+    var filePath = sender_config['filePath'];
+    var encoder = sender_config['encoder'];
+    var hmc = sender_config['hmc'];
+
+    return new FileSender(filePath, encoder, hmc);
 };
+
+
+var DebugSender = function(encoder, hmc) {
+    this.init(encoder, hmc);
+    this.msgs = [];
+    this._send_msg = function(text) {
+        this.msgs.push(text);
+    }
+};
+base.abstractSender.call(DebugSender.prototype);
+
+var debugSenderFactory = function(config) {
+    var config = typeof config !== 'undefined' ? config : {};
+    var encoder = config['encoder'];
+    var hmc = config['hmc'];
+    return new DebugSender(encoder, hmc);
+};
+
 
 exports.fileSenderFactory = fileSenderFactory;
 exports.stdoutSenderFactory = stdoutSenderFactory;
+exports.debugSenderFactory = debugSenderFactory;

@@ -20,6 +20,9 @@ var sys = require('util');
 var os = require('os');
 var heka = require('../client.js');
 
+var helpers = require('../message/helpers');
+var dict_to_fields = helpers.dict_to_fields;
+
 describe('client', function() {
     var mockSender = {
         sent: 0,
@@ -32,7 +35,7 @@ describe('client', function() {
 
     var loggerVal = 'bogus';
     var client;
-    var isoConvert = heka.IsoDateString
+    var dateToNano = heka.DateToNano;
 
     beforeEach(function() {
         mockSender.sent = 0;
@@ -84,13 +87,13 @@ describe('client', function() {
         expect(mockSender.sent).toEqual(1);
         var msg = mockSender.msgs[mockSender.msgs.length - 1];
         expect(msg.type).toEqual(type);
-        expect(msg.timestamp).toEqual(isoConvert(timestamp));
+        expect(msg.timestamp).toEqual(dateToNano(timestamp));
         expect(msg.logger).toEqual(loggerVal);
-        expect(msg.heka_pid).toEqual(process.pid);
-        expect(msg.heka_hostname).toEqual(os.hostname());
+        expect(msg.pid).toEqual(process.pid);
+        expect(msg.hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(6);
         expect(msg.payload).toEqual(payload);
-        expect(msg.fields).toEqual({});
+        expect(msg.fields).toEqual(dict_to_fields({}));
     });
 
     it('sends incr message', function() {
@@ -100,18 +103,18 @@ describe('client', function() {
         expect(mockSender.sent).toEqual(1)
         var msg = mockSender.msgs[mockSender.msgs.length - 1];
         expect(msg.type).toEqual('counter');
-        expect(msg.timestamp).toEqual(isoConvert(timestamp));
+        expect(msg.timestamp).toEqual(dateToNano(timestamp));
         expect(msg.logger).toEqual(loggerVal);
-        expect(msg.heka_pid).toEqual(process.pid);
-        expect(msg.heka_hostname).toEqual(os.hostname());
+        expect(msg.pid).toEqual(process.pid);
+        expect(msg.hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(6);
-        expect(msg.fields).toEqual({'name': name, 'rate': 1.0});
+        expect(msg.fields).toEqual(dict_to_fields({'name': name, 'rate': 1.0}));
         expect(msg.payload).toEqual('1');
     });
 
-    it('formats isodates properly', function() {
+    it('formats nanosecond dates properly', function() {
         var timestamp = new Date(Date.UTC(2013,0,1,2,3,4,50));
-        expect(isoConvert(timestamp)).toEqual("2013-01-01T02:03:04.050000Z");
+        expect(dateToNano(timestamp)).toEqual(1357005784050000000);
     });
 
     it('sends incr different count', function() {
@@ -123,12 +126,12 @@ describe('client', function() {
         expect(mockSender.sent).toEqual(1)
         var msg = mockSender.msgs[mockSender.msgs.length - 1];
         expect(msg.type).toEqual('counter');
-        expect(msg.timestamp).toEqual(isoConvert(timestamp));
+        expect(msg.timestamp).toEqual(dateToNano(timestamp));
         expect(msg.logger).toEqual(loggerVal);
-        expect(msg.heka_pid).toEqual(process.pid);
-        expect(msg.heka_hostname).toEqual(os.hostname());
+        expect(msg.pid).toEqual(process.pid);
+        expect(msg.hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(6);
-        expect(msg.fields).toEqual({'name': name, 'rate': 1.0});
+        expect(msg.fields).toEqual(dict_to_fields({'name': name, 'rate': 1.0}));
         expect(msg.payload).toEqual('3');
     });
 
@@ -142,13 +145,13 @@ describe('client', function() {
         expect(mockSender.sent).toEqual(1);
         var msg = mockSender.msgs[mockSender.msgs.length - 1];
         expect(msg.type).toEqual('timer');
-        expect(msg.timestamp).toEqual(isoConvert(timestamp));
+        expect(msg.timestamp).toEqual(dateToNano(timestamp));
         expect(msg.logger).toEqual(diffLogger);
-        expect(msg.heka_pid).toEqual(process.pid);
-        expect(msg.heka_hostname).toEqual(os.hostname());
+        expect(msg.pid).toEqual(process.pid);
+        expect(msg.hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(6);
-        expect(msg.fields).toEqual({'name': name,
-                                    'rate': 1});
+        expect(msg.fields).toEqual(dict_to_fields({'name': name,
+                                    'rate': 1}));
         expect(msg.payload).toEqual(String(elapsed));
     });
 
@@ -203,13 +206,14 @@ describe('client', function() {
         expect(mockSender.sent).toEqual(1);
         var msg = mockSender.msgs[mockSender.msgs.length - 1];
         expect(msg.type).toEqual('timer');
-        expect(msg.timestamp).toEqual(isoConvert(timestamp));
+        expect(msg.timestamp).toEqual(dateToNano(timestamp));
         expect(msg.logger).toEqual(loggerVal);
-        expect(msg.heka_pid).toEqual(process.pid);
-        expect(msg.heka_hostname).toEqual(os.hostname());
+        expect(msg.pid).toEqual(process.pid);
+        expect(msg.hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(diffSeverity);
-        expect(msg.fields).toEqual({'name': name,
-                                    'rate': 1});
+        expect(msg.fields).toEqual(dict_to_fields({'name': name,
+                                    'rate': 1}));
+
         var elapsed = parseInt(msg.payload);
         expect(elapsed >= minWait).toBeTruthy();
         // call it again
@@ -217,13 +221,16 @@ describe('client', function() {
         expect(mockSender.sent).toEqual(2);
         var msg = mockSender.msgs[mockSender.msgs.length - 1];
         expect(msg.type).toEqual('timer');
-        expect(msg.timestamp).toEqual(isoConvert(timestamp));
+        expect(msg.timestamp).toEqual(dateToNano(timestamp));
         expect(msg.logger).toEqual(loggerVal);
-        expect(msg.heka_pid).toEqual(process.pid);
-        expect(msg.heka_hostname).toEqual(os.hostname());
+        expect(msg.pid).toEqual(process.pid);
+
+        expect(msg.hostname).toEqual(os.hostname());
+
         expect(msg.severity).toEqual(diffSeverity);
-        expect(msg.fields).toEqual({'name': name,
-                                    'rate': 1});
+
+        expect(msg.fields).toEqual(dict_to_fields({'name': name,
+                                    'rate': 1}));
         expect(elapsed >= minWait).toBeTruthy();
     });
 

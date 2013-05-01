@@ -10,16 +10,30 @@
  *
  * Contributor(s):
  *  Rob Miller (rmiller@mozilla.com)
+ *  Victor Ng (vng@mozilla.com)
  *
  ***** END LICENSE BLOCK *****
  */
-"use strict"
+"use strict";
 
-var config = require('./config');
-var env_version = '0.8';
-var os = require('os');
 var Senders = require('./senders/index');
 var _ = require('underscore');
+var superscore = require('superscore');
+var config = require('./config');
+var env_version = '0.8';
+var message = require('./message');
+var helpers = require('./message/helpers');
+var toArrayBuffer = helpers.toArrayBuffer;
+var Field = message.Field;
+var os = require('os');
+
+var ByteBuffer = require('bytebuffer');
+
+var uuid = require('./uuid');
+var compute_oid_uuid = uuid.compute_oid_uuid;
+
+var helpers = require('./message/helpers');
+var dict_to_fields = helpers.dict_to_fields;
 
 // Put a namespace around RFC 3164 syslog messages
 var SEVERITY = {
@@ -33,25 +47,28 @@ var SEVERITY = {
     DEBUG: 7
 }
 
-function IsoDateString(d) {
-    function zeroFill(number, width)
-    {
-      width -= number.toString().length;
-      if ( width > 0 )
-      {
-        return new Array( width + (/\./.test( number ) ? 2 : 1) ).join( '0' ) + number;
-      }
-      return number + ""; // always return a string
-    }
+var PB_NAMETYPE_TO_INT = {'STRING': 0,
+                          'BYTES': 1,
+                          'INTEGER': 2,
+                          'DOUBLE': 3,
+                          'BOOL': 4};
 
-    return d.getUTCFullYear() + '-'
-        + zeroFill(d.getUTCMonth() + 1, 2) + '-'
-        + zeroFill(d.getUTCDate(), 2) + 'T'
-        + zeroFill(d.getUTCHours(), 2) + ':'
-        + zeroFill(d.getUTCMinutes(), 2) + ':'
-        + zeroFill(d.getUTCSeconds(), 2) + "."
-        + zeroFill(d.getUTCMilliseconds() * 1000, 6) + 'Z'
+var PB_TYPEMAP = {0: 'STRING',
+                  1: 'BYTES',
+                  2: 'INTEGER',
+                  3: 'DOUBLE',
+                  4: 'BOOL'};
+
+var PB_FIELDMAP = {0: 'value_string',
+                   1: 'value_bytes',
+                   2: 'value_integer',
+                   3: 'value_double',
+                   4: 'value_bool'};
+
+function DateToNano(d) {
+    return d.getTime() * 1000000;
 }
+
 
 var HekaClient = function(sender, logger, severity, disabledTimers, filters) 
 {
@@ -86,32 +103,44 @@ HekaClient.prototype._sendMessage = function(msg) {
 
 HekaClient.prototype.heka = function(type, opts) {
     // opts = timestamp, logger, severity, payload, fields
+
     if (opts === undefined) opts = {};
+
     if (opts.timestamp === undefined) opts.timestamp = new Date();
     if (opts.logger === undefined) opts.logger = this.logger;
     if (opts.severity === undefined) opts.severity = this.severity;
     if (opts.payload === undefined) opts.payload = '';
     if (opts.fields === undefined) opts.fields = {};
-    if (opts.timestamp instanceof Date) {
-        opts.timestamp = IsoDateString(opts.timestamp);
-    };
-
     if (opts.pid === undefined) opts.pid = this.pid;
     if (opts.hostname === undefined) opts.hostname = this.hostname;
 
+    var msg = new message.Message();
+    msg.timestamp = DateToNano(opts.timestamp);
 
-    var fullMsg = {'type': type, 'timestamp': opts.timestamp,
-        'logger': opts.logger, 'severity': opts.severity,
-        'payload': opts.payload, 'fields': opts.fields,
-        'env_version': env_version,
-        'heka_pid': opts.pid,
-        'heka_hostname': opts.hostname
-    };
-    this._sendMessage(fullMsg);
+    msg.type = type;
+    msg.logger = opts.logger;
+    msg.severity = opts.severity;
+    msg.payload = opts.payload;
+
+    var fields = dict_to_fields(opts.fields);
+    for (var i = 0; i < fields.length; i++) {
+        msg.fields.push(fields[i]);
+    }
+
+    msg.env_version = env_version;
+    msg.pid =  opts.pid;
+    msg.hostname = opts.hostname;
+
+    msg.uuid = '0000000000000000';
+    var msg_encoded = msg.encode();
+    var raw_uuid = new Buffer(compute_oid_uuid(msg_encoded.toBuffer()), "hex");
+    msg.uuid = ByteBuffer.wrap(toArrayBuffer(raw_uuid));
+    this._sendMessage(msg);
 };
 
+
 HekaClient.prototype.addMethod = function(name, method, override) {
-    if (typeof(method) !== 'function') {
+    if (typeof method !== 'function') {
         throw new Error('`method` argument must be a function');
     };
     if (!override && name in this) {
@@ -221,7 +250,11 @@ HekaClient.prototype.critical = function(msg, opts) {
     this._oldstyle(SEVERITY.CRITICAL, msg, opts);
 }
 
-exports.IsoDateString = IsoDateString;
+
+
+/***************************/
+
+exports.DateToNano = DateToNano;
 exports.HekaClient = HekaClient;
 exports.clientFromJsonConfig = config.clientFromJsonConfig;
 exports.SEVERITY = SEVERITY;

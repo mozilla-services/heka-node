@@ -14,11 +14,10 @@
  ***** END LICENSE BLOCK *****
  */
 "use strict";
-var zmq = require('./zmq.js');
 var dev = require('./dev.js');
 var udp = require('./udp.js');
 
+exports.debugSenderFactory = dev.debugSenderFactory;
 exports.fileSenderFactory = dev.fileSenderFactory;
 exports.stdoutSenderFactory = dev.stdoutSenderFactory;
 exports.udpSenderFactory = udp.udpSenderFactory;
-exports.zmqPubSenderFactory = zmq.zmqPubSenderFactory;

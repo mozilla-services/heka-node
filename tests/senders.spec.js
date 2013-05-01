@@ -17,9 +17,15 @@
 "use strict";
 
 var horaa = require('horaa');
+var ByteBuffer = require('bytebuffer');
 var sys = require('util');
 var senders = require('../senders');
 var udpHoraa = horaa('dgram');
+var message = require('../message');
+var Message = message.Message;
+
+var encoders = require('../senders/encoders');
+var jsonEncoder = encoders.jsonEncoder;
 
 
 var monkeyStdoutWrite = function(fakeWrite) {
@@ -30,18 +36,30 @@ var monkeyStdoutWrite = function(fakeWrite) {
     };
 };
 
+function build_test_msg() {
+    var msg = new Message();
+    msg.uuid='1234567890123456';
+    msg.timestamp=100;
+    return msg;
+}
+
+var testMsg = build_test_msg();
+
+function utf8(buff) {
+    return buff.toString('utf8');
+}
+
+var msgs = [];
 
 describe('StdoutSender', function() {
 
     var unhook;
-    var msgs = [];
-    var testMsg = {'foo': 'bar', 'baz': 'bawlp'};
     var mockStdoutWrite = function(string, encoding, fd) {
         msgs.push(string);
     };
 
     beforeEach(function() {
-        msgs = [];
+        msgs.length = 0;
         unhook = monkeyStdoutWrite(mockStdoutWrite);
     });
 
@@ -50,21 +68,24 @@ describe('StdoutSender', function() {
     });
 
     it('sends messages', function() {
+        expect(msgs.length).toEqual(0);
         var sender = senders.stdoutSenderFactory();
+        expect(msgs.length).toEqual(0);
         sender.sendMessage(testMsg);
         expect(msgs.length).toEqual(1);
-        expect(msgs[0]).toEqual(JSON.stringify(testMsg) + "\n");
+        unhook();
+
+        // The header is going to be 10 bytes long including all the
+        // sentinel bytes, so just strip it off.
+        //
+        // node.js makes me cry.  comparing buffer slices doesn't work
+        // with the toEqual method, so you need to stringify the JSON
+        // encoded message
+        var actual = utf8(msgs[0].slice(10));
+        var expected = utf8(jsonEncoder.encode(testMsg));
+        expect(actual).toEqual(expected);
     });
 
-    it('supports alternate encoders', function() {
-        var newFormatter = function(msg) {
-            return ':::' + JSON.stringify(msg) + ':::';
-        };
-        var sender = senders.stdoutSenderFactory({encoder: newFormatter});
-        sender.sendMessage(testMsg);
-        expect(msgs.length).toEqual(1);
-        expect(msgs[0]).toEqual(newFormatter(testMsg));
-    });
 });
 
 describe('UdpSender', function() {
@@ -84,7 +105,8 @@ describe('UdpSender', function() {
     };
 
 
-    var testMsg = "foo bar";
+
+    var testMsg = build_test_msg();
 
     beforeEach(function() {
         mockUdpSocket.msgs = [];
@@ -107,7 +129,9 @@ describe('UdpSender', function() {
                                                ports: 5565});
         sender.sendMessage(testMsg);
         expect(mockUdpSocket.msgs.length).toEqual(1);
-        expect(mockUdpSocket.msgs[0]).toEqual(sender.encoder(testMsg));
+
+        var actual_data = utf8(mockUdpSocket.msgs[0].slice(10));
+        expect(actual_data).toEqual(utf8(sender.encoder.encode(testMsg)));
         expect(mockUdpSocket.hosts[0]).toEqual('localhost');
         expect(mockUdpSocket.ports[0]).toEqual(5565);
     });
@@ -118,8 +142,8 @@ describe('UdpSender', function() {
         sender.sendMessage(testMsg);
         expect(mockUdpSocket.msgs.length).toEqual(2);
 
-        expect(mockUdpSocket.msgs[0]).toEqual(sender.encoder(testMsg));
-        expect(mockUdpSocket.msgs[1]).toEqual(sender.encoder(testMsg));
+        expect(utf8(mockUdpSocket.msgs[0].slice(10))).toEqual(utf8(sender.encoder.encode(testMsg)));
+        expect(utf8(mockUdpSocket.msgs[1].slice(10))).toEqual(utf8(sender.encoder.encode(testMsg)));
 
         expect(mockUdpSocket.hosts[0]).toEqual('localhost');
         expect(mockUdpSocket.hosts[1]).toEqual('10.0.0.1');
@@ -135,8 +159,8 @@ describe('UdpSender', function() {
         sender.sendMessage(testMsg);
         expect(mockUdpSocket.msgs.length).toEqual(2);
 
-        expect(mockUdpSocket.msgs[0]).toEqual(sender.encoder(testMsg));
-        expect(mockUdpSocket.msgs[1]).toEqual(sender.encoder(testMsg));
+        expect(utf8(mockUdpSocket.msgs[0].slice(10))).toEqual(utf8(sender.encoder.encode(testMsg)));
+        expect(utf8(mockUdpSocket.msgs[1].slice(10))).toEqual(utf8(sender.encoder.encode(testMsg)));
 
         expect(mockUdpSocket.hosts[0]).toEqual('localhost');
         expect(mockUdpSocket.hosts[1]).toEqual('10.0.0.1');
@@ -152,7 +176,6 @@ describe('UdpSender', function() {
     }
 
     it('works with factory functions', function() {
-        // We need a way to run the 
         throw new Error("test not implemented");
     }
     */

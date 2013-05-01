@@ -16,17 +16,43 @@
  */
 "use strict";
 
-var msgpack = require('msgpack');
+var message = require('../message');
 var encoders = require('../senders/encoders.js');
+var client = require('../client');
+var DateToNano = client.DateToNano;
+var helpers = require("../message/helpers");
+var dict_to_fields = helpers.dict_to_fields;
+var uuid = require('../uuid');
+var compute_oid_uuid = uuid.compute_oid_uuid;
 
-describe('msgpack', function() {
+// ProtocolBuffers encodes itself automatically through the reflection
+// API
 
-    if (typeof msgpack !== 'undefined') {
-        it('encodes msgpack correctly', function() {
-            var expected = {foo: 42};
-            var serialized = encoders.msgpackEncoder(expected);
-            expect(msgpack.unpack(serialized)).toEqual(expected);
-        });
+function build_test_msg(d) {
+    var msg = new message.Message();
+    msg.timestamp = DateToNano(d);
+
+    msg.type = 'foo';
+
+    var fields = dict_to_fields({name: 'bar', value: 42});
+    for (var i = 0; i < fields.length; i++) {
+        msg.fields.push(fields[i]);
     }
 
+    msg.uuid = '0000000000000000';
+    var msg_encoded = msg.encode();
+    msg.uuid = compute_oid_uuid(msg_encoded.toBuffer());
+
+    return msg;
+}
+
+describe('json', function() {
+    var d = new Date(2013,1,1);
+    var msg = build_test_msg(d);
+    it('encodes json correctly', function() {
+        var serialized = encoders.jsonEncoder.encode(msg);
+        var expected = "{\"uuid\":\"NWFmZWJlMzEyN2I1NTliNDk4YzM1NmU5MjQzNjliOTc=\",\"timestamp\":1359694800000000000,\"type\":\"foo\",\"logger\":null,\"severity\":null,\"payload\":null,\"env_version\":null,\"pid\":null,\"hostname\":null,\"fields\":[{\"value_type\":0,\"value_format\":0,\"value_string\":[\"bar\"]},{\"value_type\":2,\"value_format\":0,\"value_integer\":[42]}]}";
+
+        expect(serialized.toString('utf8')).toEqual(expected);
+    });
 });

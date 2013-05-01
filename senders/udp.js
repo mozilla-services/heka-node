@@ -19,8 +19,8 @@
 var _ = require('underscore');
 var base = require('./base');
 
-var UdpSender = function(host, port, encoder) {
-    this.init(encoder);
+var UdpSender = function(host, port, encoder, hmc) {
+    this.init(encoder, hmc);
 
     if (!Array.isArray(host))
     {
@@ -47,14 +47,13 @@ var UdpSender = function(host, port, encoder) {
     this.dgram = require('dgram');
 
 
-    this._send_msg = function(text) {
-        var message = new Buffer(text);
+    this._send_msg = function(buffer) {
         var client = this.dgram.createSocket("udp4");
 
         _.each(this._destination, function(elem) {
             var host = elem[0];
             var port = elem[1];
-            client.send(message, 0, message.length, port, host, function(err, bytes) {
+            client.send(buffer, 0, buffer.length, port, host, function(err, bytes) {
                 client.close();
             });
         })
@@ -79,10 +78,15 @@ base.abstractSender.call(UdpSender.prototype);
 var udpSenderFactory = function(sender_config) {
     var hosts = sender_config['hosts'];
     var ports = sender_config['ports'];
+    var encoder = sender_config['encoder'];
+    var hmc = sender_config['hmc'];
+
     if ((hosts == null) || (ports == null)) {
         throw new Error("Invalid host/port combination: ["+hosts+"] ["+ports+"]");
     }
-    return new UdpSender(hosts, ports);
+
+    var sender = new UdpSender(hosts, ports, encoder, hmc);
+    return sender;
 };
 
 exports.udpSenderFactory = udpSenderFactory;

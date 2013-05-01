@@ -30,8 +30,11 @@ var mockSender = {
 };
 
 var makeMockSender = function(senderConfig) {
-    if (typeof(senderConfig.foo) !== 'undefined') {
+    if (typeof senderConfig.foo !== 'undefined') {
         mockSender.foo = senderConfig.foo;
+    };
+    if (typeof senderConfig.hmc !== 'undefined') {
+        mockSender.hmc = senderConfig.hmc;
     };
     return mockSender;
 };
@@ -195,6 +198,7 @@ describe('config', function() {
         }).toThrow(new Error("factory attribute is missing from config"));
 
     });
+
 
     it('sets up filters and plugins', function() {
         var customLabel = 'LOGGER, YO'

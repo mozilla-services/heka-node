@@ -61,7 +61,7 @@ function block(ms) {
 var echo_func = function(request, response, next) {
     response.send(request.params);
     block(10);
-    log.incr('demo.node.incr_thing');
+    log.incr('demo.node.incr_thing', {count:2, my_meta:42}, 0.25);
     return next();
 };
 

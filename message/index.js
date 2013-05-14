@@ -16,7 +16,12 @@
 
 var ProtoBuf = require("protobufjs");
 
-var builder = ProtoBuf.protoFromFile("protobuf/message.proto");
+var heka = require('../client');
+var path = require('path');
+
+var proto_path = path.join(__dirname, '../protobuf/message.proto');
+
+var builder = ProtoBuf.protoFromFile(proto_path);
 var message = builder.build("message");
 
 var MAX_HEADER_SIZE = 255

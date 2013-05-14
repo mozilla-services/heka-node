@@ -80,7 +80,7 @@ HekaClient.prototype.setup = function(sender, logger, severity, disabledTimers,
 {
     this.sender = sender;
     this.logger = typeof(logger) != 'undefined' ? logger : '';
-    this.severity = typeof(severity) != 'undefined' ? severity : 6;
+    this.severity = typeof(severity) != 'undefined' ? severity : SEVERITY.INFORMATIONAL;
     this.disabledTimers = typeof(disabledTimers) != 'undefined' ? disabledTimers : [];
     this.filters = typeof(filters) != 'undefined' ? filters : [];
     this._dynamicMethods = {};

@@ -191,7 +191,33 @@ describe('client', function() {
     });
 
     it('can use no options with timer calls', function() {
-        throw new Error('test not implemented');
+        var minWait = 40;  // in milliseconds
+        var sleeper = function() {
+            block(minWait);
+        };
+        var name = 'decorator';
+        var timestamp = new Date();
+        var diffSeverity = 4;
+        // wrap it
+        sleeper = client.timer(sleeper, name);
+        // call it
+        sleeper();
+        expect(mockSender.sent).toEqual(1);
+        var msg = mockSender.msgs[mockSender.msgs.length - 1];
+        expect(msg.type).toEqual('timer');
+        expect(msg.logger).toEqual(loggerVal);
+        expect(msg.pid).toEqual(process.pid);
+        expect(msg.hostname).toEqual(os.hostname());
+
+        // Default severity
+        expect(msg.severity).toEqual(heka.SEVERITY.INFORMATIONAL);
+
+        expect(msg.fields).toEqual(dict_to_fields({'name': name,
+                                    'rate': 1}));
+
+        var elapsed = parseInt(msg.payload);
+        expect(elapsed >= minWait).toBeTruthy();
+
     });
 
     it('decorates w timer correctly', function() {

@@ -2,4 +2,5 @@
 *.swp
 /node_modules
 /docs/build
+docs/source/_themes
 node_modules

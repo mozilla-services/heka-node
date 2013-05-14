@@ -190,6 +190,10 @@ describe('client', function() {
         expect(mockSender.sent).toBeGreaterThan(0);
     });
 
+    it('can use no options with timer calls', function() {
+        throw new Error('test not implemented');
+    });
+
     it('decorates w timer correctly', function() {
         var minWait = 40;  // in milliseconds
         var sleeper = function() {

@@ -5,14 +5,11 @@
 
 .. include:: ../README.rst
 
-There are two primary components to the heka-node library, the :doc:`api/config`
-config class which exposes a factory function to generate a configured
-client, and the various :doc:`api/senders` classes, one of which must
-be provided to the factory function and which handles the actual
-delivery of the message to the router component.
+The primary component to the heka-node library, is the
+:doc:`api/client` client class which exposes a `clientFromJsonConfig`
+factory function that will generate a configured client.
 
-The HekaClient must be instantiated with the factory functions.  The
-raw class definition is not exposed through the public api.
+The HekaClient should be instantiated with the factory function. 
 
 Folks new to using Heka will probably find :doc:`config` a good
 place to get started.
@@ -28,6 +25,7 @@ Contents:
    getstarted
    config
    api/client.rst
+   usage
 
 
 Indices and tables

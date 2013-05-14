@@ -2,7 +2,7 @@ Getting Started
 ===============
 
 There are two primary components with which users of the heka-node library
-should be aware. The first is the :doc:`api/config`
+should be aware. The first is the :doc:`api/client`
 clientFromJsonConfig factory function. 
 
 The HekaClient exposes the Heka API, and is generally your main

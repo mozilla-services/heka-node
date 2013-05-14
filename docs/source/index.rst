@@ -25,8 +25,6 @@ Contents:
    getstarted
    config
    api/client.rst
-   usage
-
 
 Indices and tables
 ==================

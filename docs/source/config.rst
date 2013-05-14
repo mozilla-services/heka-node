@@ -2,7 +2,7 @@ Heka Configuration
 --------------------
 
 To assist with getting a working Heka set up, heka-node provides a
-:doc:`api/config` module which will take declarative configuration info in
+:doc:`api/client` module which will take declarative configuration info in
 JSON format and use it to configure a HekaClient instance. 
 
 

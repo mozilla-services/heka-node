@@ -102,8 +102,6 @@ HekaClient.prototype._sendMessage = function(msg) {
 };
 
 HekaClient.prototype.heka = function(type, opts) {
-    // opts = timestamp, logger, severity, payload, fields
-
     if (opts === undefined) opts = {};
 
     if (opts.timestamp === undefined) opts.timestamp = new Date();
@@ -183,7 +181,8 @@ HekaClient.prototype.timer_send = function(elapsed, name, opts) {
 };
 
 HekaClient.prototype.timer = function(fn, name, opts) {
-    // opts = timestamp, logger, severity, fields, rate
+    if (opts === undefined) opts = {};
+    if (opts.rate === undefined) opts.rate = 1;
 
     var NoOpTimer = function() {
         return null;
@@ -201,9 +200,6 @@ HekaClient.prototype.timer = function(fn, name, opts) {
         return NoOpTimer;
     }
 
-    //
-    //
-    if (opts === undefined) opts = {};
     var currentClient = this;
 
     return function() {

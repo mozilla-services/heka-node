@@ -1,0 +1,18 @@
+{
+    "author": "Victor Ng <vng@mozilla.com>",
+    "name": "heka_node_demo",
+    "description": "A demo using heka-node",
+    "version": "0.2.0",
+    "homepage": "https://github.com/mozilla-services/heka-node",
+    "main": "./demo.js",
+    "engines": {
+        "node": ">=0.10.0"
+    },
+    "dependencies": {
+        "heka": ">=0.2.0",
+        "restify": ">=2.5.0"
+    },
+    "scripts": {
+        "test": "node demo.js"
+    }
+}

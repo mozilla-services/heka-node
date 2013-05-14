@@ -6,6 +6,22 @@
  * ex:
  *    http://localhost:8000/echo/blahblahblah
  *
+ *
+ * To view the data, you will need hekad running and listening on
+ * localhost:5565 for UDP messages.
+ *
+ *
+ * A minimal hekad 0.2.0 configuration in TOML is:
+ *
+ * -----
+ *    [UdpInput]
+ *    address = "127.0.0.1:5565"
+ *
+ *    [LogOutput]
+ *    message_matcher = "Type == 'counter' || Type == 'timer'" 
+ *    payload_only = false
+ * -----
+ *
  */
 "use strict";
 
@@ -15,8 +31,10 @@ var restify = require('restify');
 
 var heka_CONF = {
     'sender': {'factory': 'heka/senders:udpSenderFactory',
-               'hosts': '192.168.20.2',
-               'ports': 5565},
+               'hosts': 'localhost',
+               'ports': 5565,
+               'encoder': 'heka/senders/encoders:protobufEncoder'
+    },
     'logger': 'test',
     'severity': 5
 };

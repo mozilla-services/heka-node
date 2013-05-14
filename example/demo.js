@@ -14,7 +14,7 @@ var _ = require('underscore');
 var restify = require('restify');
 
 var heka_CONF = {
-    'sender': {'factory': 'heka/Senders:udpSenderFactory',
+    'sender': {'factory': 'heka/senders:udpSenderFactory',
                'hosts': '192.168.20.2',
                'ports': 5565},
     'logger': 'test',

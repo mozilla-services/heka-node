@@ -9,10 +9,10 @@
         "url": "https://github.com/mozilla-services/heka-node.git"
     },
     "main": "./client.js",
-    "files": ['protobuf/*.proto',
-              'message/*.js',
-              'senders/*.js',
-              '*.js'],
+    "files": ["protobuf/*.proto",
+              "message/*.js",
+              "senders/*.js",
+              "*.js"],
     "engines": {
         "node": ">=0.10.0"
     },

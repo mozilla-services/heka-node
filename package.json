@@ -1,14 +1,18 @@
 {
     "author": "Rob Miller <rmiller@mozilla.com>",
     "name": "heka",
-    "description": "Metrics logging",
-    "version": "0.1.1",
+    "description": "A node.js client for Mozilla's Heka logging server",
+    "version": "0.2.0",
     "homepage": "https://github.com/mozilla-services/heka-node",
     "repository": {
         "type": "git",
         "url": "https://github.com/mozilla-services/heka-node.git"
     },
     "main": "./client.js",
+    "files": ['protobuf/*.proto',
+              'message/*.js',
+              'senders/*.js',
+              '*.js'],
     "engines": {
         "node": ">=0.10.0"
     },
@@ -16,10 +20,6 @@
         "protobufjs": ">=0.12.8",
         "underscore": ">=1.4.2",
         "superscore": ">=0.3.4"
-    },
-    "optionalDependencies": {
-        "msgpack":">=0.1.5",
-        "restify":">=1.4.4"
     },
     "devDependencies": {
         "jasmine-node": ">=1.6.0",

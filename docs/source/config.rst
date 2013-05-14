@@ -17,7 +17,7 @@ may look like this ::
 
     var heka = require('heka');
     var heka_CONF = {
-        'sender': {'factory': 'heka/Senders:udpSenderFactory',
+        'sender': {'factory': 'heka/senders:udpSenderFactory',
                    'hosts': '192.168.20.2',
                    'ports': 5565},
     };
@@ -66,7 +66,8 @@ The following snippet demonstrates settings all optional parameters in
 the heka client ::
 
     var config = {
-        'sender': {'factory': './example/config_imports:makeMockSender' },
+        'sender': {'factory': 'heka/senders:stdoutSenderFactory',
+                   'encoder': 'heka/senders/encoders:protobufEncoder'},
         'logger': 'test',
         'severity': heka.SEVERITY.INFORMATIONAL,
         'disabledTimers': ['disabled_timer_name'],
@@ -77,7 +78,3 @@ the heka client ::
     var jsonConfig = JSON.stringify(config);
     var client = heka.clientFromJsonConfig(jsonConfig);
 
-
-You can find more runnable code samples at
-http://github.com/mozilla-services/heka-node/ in the examples
-subdirectory.

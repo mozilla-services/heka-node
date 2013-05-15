@@ -62,19 +62,16 @@ Signature ::
 
     timer(fn, name, opts={})
 
+Options:
 
     `fn` is the function to be called
     `name` is the name of the event you are measuring.
-    `opts` may contain a `rate` attribute which specifies a sampling
-           rate for timer messages.
+    `opts` may contain a `rate` attribute which specifies a sampling rate for timer messages.
 
-    The return value of `timer` is your decorated function
-
-
+    The return value of `timer` is your decorated function.
 
 Encoders
 --------
-
 
 The heka wire format for 0.2 currently uses ProtocolBuffers to encode
 the header and you may use ProtocolBuffer or JSON to encode the
@@ -83,3 +80,16 @@ payload.
 At this time, please use the JSON encoder only.  There are known bugs
 when the ProtocolBuffer encoder is applied to the payload of the
 message body.
+
+
+Example
+-------
+
+heka-node includes a complete example that exercises the `timer()` and
+the `incr()` methods using a thing HTTP REST API server.  You can find
+the source in the `heka-node`_ repository on github in the example
+directory.
+
+
+
+.. _heka-node: https://github.com/mozilla-services/heka-node/

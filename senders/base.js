@@ -46,12 +46,12 @@ var abstractSender = function() {
 
         if (hmc === undefined) {
             this.hmc = null;
-        } else { 
+        } else {
             this.hmc = hmc;
         }
     };
 
-    this.buildHeader = function(msg, msg_length) { 
+    this.buildHeader = function(msg, msg_length) {
 
         var header = new message.Header();
         header.message_encoding = this.encoder.encoder_type;
@@ -85,8 +85,8 @@ var abstractSender = function() {
          * 1 byte : UNIT_SEPARATOR
          * N bytes : messsage bytes
          */
-        msg_buff = this.encoder.encode(msg);
-        header = this.buildHeader(msg, msg_buff.length);
+        var msg_buff = this.encoder.encode(msg);
+        var header = this.buildHeader(msg, msg_buff.length);
 
         var header_buff = header.encode().toBuffer();
 

@@ -2,7 +2,7 @@
     "author": "Rob Miller <rmiller@mozilla.com>",
     "name": "heka",
     "description": "A node.js client for Mozilla's Heka logging server",
-    "version": "0.2.0-a",
+    "version": "0.2.0",
     "homepage": "https://github.com/mozilla-services/heka-node",
     "repository": {
         "type": "git",
@@ -18,9 +18,9 @@
     },
     "dependencies": {
         "bytebuffer": "1.3.6",
-        "protobufjs": "0.12.8",
-        "underscore": "1.4.2",
-        "superscore": "0.3.4"
+        "protobufjs": ">=0.12.8",
+        "underscore": ">=1.4.2",
+        "superscore": ">=0.3.4"
     },
     "devDependencies": {
         "jasmine-node": ">=1.6.0",

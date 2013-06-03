@@ -14,8 +14,10 @@
  *
  ***** END LICENSE BLOCK *****
  */
-
+var ByteBuffer = require('bytebuffer');
 var Header = require('../message').Header;
+var helpers = require('../message/helpers');
+var toArrayBuffer = helpers.toArrayBuffer;
 
 /*
  * Encoders are classes implement an encode(msg) method and
@@ -24,7 +26,7 @@ var Header = require('../message').Header;
  * They must also export an attribute `encoder_type` which
  * provides a lookup value into the ProtocolBuffer definition
  * in Header.MessageEncoding
- * 
+ *
  */
 
 var PB_NAMETYPE_TO_INT = {'STRING': 0,
@@ -55,8 +57,8 @@ JSONEncoder.prototype.setup = function() {
 
 JSONEncoder.prototype.encode = function(msg) {
 
-    jdata = {}
-    jdata['uuid'] = new Buffer(msg.uuid).toString('base64');
+    var jdata = {}
+    jdata['uuid'] = new Buffer(msg.uuid, "hex").toString('base64');
     jdata['timestamp'] = msg.timestamp;
     jdata['type'] = msg.type;
     jdata['logger'] = msg.logger;
@@ -105,6 +107,8 @@ ProtoBufEncoder.prototype.setup = function() {
 }
 
 ProtoBufEncoder.prototype.encode = function(msg) {
+    var raw_uuid = new Buffer(msg.uuid, "hex");
+    msg.uuid = ByteBuffer.wrap(toArrayBuffer(raw_uuid));
     return msg.encode().toBuffer()
 }
 

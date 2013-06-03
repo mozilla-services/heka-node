@@ -72,7 +72,7 @@ JSONEncoder.prototype.encode = function(msg) {
     for (var i = 0; i < msg.fields.length; i++) {
         var f = msg.fields[i];
 
-        var field_dict = {'value_type': f.value_type, 'value_format': 0};
+        var field_dict = {'name': f.name, 'value_type': f.value_type, 'value_format': 0};
         if (f.value_string.length !== 0) {
             field_dict['value_string'] = [f.value_string[0]];
             jdata['fields'].push(field_dict);

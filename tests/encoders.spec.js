@@ -42,16 +42,15 @@ function build_test_msg(d) {
     msg.uuid = '0000000000000000';
     var msg_encoded = msg.encode();
     msg.uuid = compute_oid_uuid(msg_encoded.toBuffer());
-
     return msg;
 }
 
 describe('json', function() {
-    var d = new Date(2013,1,1);
+    var d = new Date(Date.UTC(2013,1,1));
     var msg = build_test_msg(d);
     it('encodes json correctly', function() {
         var serialized = encoders.jsonEncoder.encode(msg);
-        var expected = "{\"uuid\":\"NWFmZWJlMzEyN2I1NTliNDk4YzM1NmU5MjQzNjliOTc=\",\"timestamp\":1359694800000000000,\"type\":\"foo\",\"logger\":null,\"severity\":null,\"payload\":null,\"env_version\":null,\"pid\":null,\"hostname\":null,\"fields\":[{\"value_type\":0,\"value_format\":0,\"value_string\":[\"bar\"]},{\"value_type\":2,\"value_format\":0,\"value_integer\":[42]}]}";
+        var expected = "{\"uuid\":\"bJYrLoc/XZ2TCh9Qc+k6CA==\",\"timestamp\":1359676800000000000,\"type\":\"foo\",\"logger\":null,\"severity\":null,\"payload\":null,\"env_version\":null,\"pid\":null,\"hostname\":null,\"fields\":[{\"name\":\"name\",\"value_type\":0,\"value_format\":0,\"value_string\":[\"bar\"]},{\"name\":\"value\",\"value_type\":2,\"value_format\":0,\"value_integer\":[42]}]}";
 
         expect(serialized.toString('utf8')).toEqual(expected);
     });

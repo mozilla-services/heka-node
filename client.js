@@ -23,16 +23,11 @@ var config = require('./config');
 var env_version = '0.8';
 var message = require('./message');
 var helpers = require('./message/helpers');
-var toArrayBuffer = helpers.toArrayBuffer;
 var Field = message.Field;
 var os = require('os');
 
-var ByteBuffer = require('bytebuffer');
-
 var uuid = require('./uuid');
 var compute_oid_uuid = uuid.compute_oid_uuid;
-
-var helpers = require('./message/helpers');
 var dict_to_fields = helpers.dict_to_fields;
 
 // Put a namespace around RFC 3164 syslog messages
@@ -70,7 +65,7 @@ function DateToNano(d) {
 }
 
 
-var HekaClient = function(sender, logger, severity, disabledTimers, filters) 
+var HekaClient = function(sender, logger, severity, disabledTimers, filters)
 {
     this.setup(sender, logger, severity, disabledTimers, filters);
 };
@@ -131,8 +126,8 @@ HekaClient.prototype.heka = function(type, opts) {
 
     msg.uuid = '0000000000000000';
     var msg_encoded = msg.encode();
-    var raw_uuid = new Buffer(compute_oid_uuid(msg_encoded.toBuffer()), "hex");
-    msg.uuid = ByteBuffer.wrap(toArrayBuffer(raw_uuid));
+    msg.uuid = compute_oid_uuid(msg_encoded.toBuffer());
+
     this._sendMessage(msg);
 };
 

@@ -114,53 +114,6 @@ describe('ProtocolBuffer', function() {
             expect(actual).toEqual(expected);
         });
 
-        it('with hmac byte arrays', function() {
-            var str_proto = "message Test { required bytes b = 0; }";
-            var builder = ProtoBuf.protoFromString(str_proto);
-            var Test = builder.build("Test");
-
-            var key = 'my key';
-            var text = 'my content';
-
-            // This is a precomputed SHA1 hmac from python
-            var py_hmac = '5e7a65776a38b5526daa8725ec31db31a7a8b50a';
-            var digest = crypto.createHmac('sha1', key).update(text).digest();
-
-            expect(digest.toString('hex')).toEqual(py_hmac);
-            expect(digest.toString('hex').length).toEqual(40);
-
-            var myTest = new Test();
-            //var bb = new ByteBuffer(digest);
-            myTest.b = new ByteBuffer(digest.length);
-
-            for (var i = 0; i < digest.length; i++) {
-                myTest.b.writeUint8(digest[i], i);
-            }
-            myTest.b.length = 20;
-            //myTest.b.flip();
-
-            var expected = myTest.b.array;
-
-            var bb_encoded = myTest.encode();
-            var ab = bb_encoded.toArrayBuffer();
-            var testCopy = Test.decode(ab);
-
-            // This is crazy.  Something about decoding array data
-            // causes two extra bytes
-            var bad_bytes = testCopy.b.array.slice(0,2);
-
-            // These two bytes shouldn't be here.  at all.
-            expect(bad_bytes[0]).toBe(2);
-            expect(bad_bytes[1]).toBe(20);
-
-            var actual = testCopy.b.array.slice(2);
-
-            expect(actual).toEqual(expected);
-
-            var actual_hex = ByteBuffer.wrap(actual).toHex().replace(/[\s|<|>]/g, '').toLowerCase();
-            expect(actual_hex).toEqual(py_hmac);
-        });
-
         it("doesn't know about arrays of double", function() {
             var m = new Message();
             var f = new Field();
@@ -174,10 +127,8 @@ describe('ProtocolBuffer', function() {
 
             var buff = m.encode().toArrayBuffer();
             var new_msg = Message.decode(buff);
-            console.log(new_msg.fields[0]);
-            console.log(m.fields[0]);
 
-            // TODO: this seems to work in test, but not in real code
+            // ??? this seems to work in test, but not in real code
             // with real messages.  
             expect(new_msg.fields[0]).toEqual(m.fields[0]);
         });

@@ -10,7 +10,6 @@
  * To view the data, you will need hekad running and listening on
  * localhost:5565 for UDP messages.
  *
- *
  * A minimal hekad 0.2.0 configuration in TOML is:
  *
  * -----

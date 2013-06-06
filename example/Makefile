@@ -2,5 +2,6 @@
 # npmjs.org
 
 all:
+	npm install restify
 	npm install heka
 	node demo.js

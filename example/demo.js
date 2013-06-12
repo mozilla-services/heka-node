@@ -31,7 +31,9 @@ var restify = require('restify');
 var heka_CONF = {
     'sender': {'factory': 'heka/senders:udpSenderFactory',
                'hosts': 'localhost',
-               'ports': 5565
+               'ports': 5565,
+                'encoder': 'heka/senders/encoders:jsonEncoder'
+                //'encoder': 'heka/senders/encoders:protobufEncoder'
     },
     'logger': 'test',
     'severity': 5

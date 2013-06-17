@@ -44,7 +44,7 @@ var dict_to_fields = function (field_dict, prefix)  {
         }
 
         f.name = full_name;
-        f.value_format = Field.ValueFormat.RAW;
+        f.representation = "";
 
         var is_array = false;
         if (v instanceof Array) {

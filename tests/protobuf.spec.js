@@ -120,7 +120,7 @@ describe('ProtocolBuffer', function() {
             m.uuid = '0123456789012345';
             m.timestamp = 10;
             f.name = 'blah';
-            f.value_format = Field.ValueFormat.RAW;
+            f.representation = "";
             f.value_type = Field.ValueType.DOUBLE;
             f.value_double.push(0.25);
             m.fields = [f];

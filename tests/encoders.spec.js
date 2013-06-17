@@ -50,8 +50,10 @@ describe('json', function() {
     var msg = build_test_msg(d);
     it('encodes json correctly', function() {
         var serialized = encoders.jsonEncoder.encode(msg);
-        var expected = "{\"uuid\":\"bJYrLoc/XZ2TCh9Qc+k6CA==\",\"timestamp\":1359676800000000000,\"type\":\"foo\",\"logger\":null,\"severity\":null,\"payload\":null,\"env_version\":null,\"pid\":null,\"hostname\":null,\"fields\":[{\"name\":\"name\",\"value_type\":0,\"value_format\":0,\"value_string\":[\"bar\"]},{\"name\":\"value\",\"value_type\":2,\"value_format\":0,\"value_integer\":[42]}]}";
+        var expected = "{\"uuid\":\"ZlkXs0sVUZ+LJI5k8EQvgQ==\",\"timestamp\":1359676800000000000,\"type\":\"foo\",\"logger\":null,\"severity\":null,\"payload\":null,\"env_version\":null,\"pid\":null,\"hostname\":null,\"fields\":[{\"name\":\"name\",\"value_type\":0,\"representation\":\"\",\"value_string\":[\"bar\"]},{\"name\":\"value\",\"value_type\":2,\"representation\":\"\",\"value_integer\":[42]}]}"
 
-        expect(serialized.toString('utf8')).toEqual(expected);
+        var obj1 = JSON.parse(serialized.toString('utf8'));
+        var obj2 = JSON.parse(expected);
+        expect(obj1).toEqual(obj2);
     });
 });

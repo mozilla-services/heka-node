@@ -28,7 +28,14 @@ var NAMESPACE_X500 = '6ba7b814-9dad-11d1-80b4-00c04fd430c8';
  */
 function hex_to_bin(uuid) {
     var hex = uuid.replace(/[\-{}]/g, '');
-    return hex;
+
+    var bin = '';
+    for (var i = 0; i < hex.length; i += 2)
+    {   // Convert each character to a bit
+        bin += String.fromCharCode(parseInt(hex.charAt(i) + hex.charAt(i + 1), 16));
+    }
+
+    return bin;
 };
 
 

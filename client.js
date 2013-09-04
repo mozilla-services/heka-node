@@ -16,7 +16,7 @@
  */
 "use strict";
 
-var Senders = require('./senders/index');
+var Senders = require('./streams/index');
 var _ = require('underscore');
 var superscore = require('superscore');
 var config = require('./config');

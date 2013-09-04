@@ -15,16 +15,51 @@
  */
 "use strict";
 
-var crypto = require('crypto');
 var message = require('../message');
-var helpers = require('../message/helpers');
 var Header = message.Header;
 var Message = message.Message;
 var Field = message.Field;
-var toArrayBuffer = helpers.toArrayBuffer;
-
 var ProtoBuf = require("protobufjs");
 var ByteBuffer = require("bytebuffer");
+
+function build_msg() {
+    var m = new Message();
+    var f = new Field();
+
+    m.uuid = '0123456789012345';
+    m.type = 'demo';
+    m.timestamp = 1000000;
+    f.name = 'myfield'
+        f.representation = "";
+    m.fields = [f];
+    return m;
+}
+
+function hmac_msg() {
+    var m = new Message();
+    m.uuid = '0123456789012345';
+    m.type = 'hmac';
+    m.timestamp = 1000000;
+    return m;
+}
+
+function compute_hex(array_buff) {
+    var hex_values = [];
+    for (var i = 0; i < array_buff.byteLength; i++) {
+        var hex_val = Number(array_buff[i]).toString(16);
+        if (hex_val.length < 2) {
+            hex_val = '0' + hex_val;
+        }
+        hex_values = hex_values.concat(hex_val);
+    }
+    return hex_values.join(":");
+}
+
+function check(msg, expected) {
+    var buff = msg.encode().toArrayBuffer();
+    var buff_hex = compute_hex(buff);
+    expect(buff_hex).toEqual(expected);
+}
 
 describe('ProtocolBuffer', function() {
 
@@ -43,7 +78,7 @@ describe('ProtocolBuffer', function() {
 
         // Force the use of arraybuffer all the time or else bad
         // things happen
-        var new_header = Header.decode(toArrayBuffer(buff));
+        var new_header = Header.decode(buff);
         expect(new_header).toEqual(header);
         expect(new_header.message_length).toEqual(header.message_length);
     });
@@ -105,7 +140,7 @@ describe('ProtocolBuffer', function() {
             var string_buffer = new Buffer('hello world');
 
             var myTest = new Test();
-            myTest.b = ByteBuffer.wrap(toArrayBuffer(string_buffer));
+            myTest.b = ByteBuffer.wrap(string_buffer);
             var expected = myTest.b.array;
 
             var jsbuf = myTest.encode().toArrayBuffer();
@@ -113,24 +148,83 @@ describe('ProtocolBuffer', function() {
             var actual = myTest.b.array;
             expect(actual).toEqual(expected);
         });
-
-        it("doesn't know about arrays of double", function() {
-            var m = new Message();
-            var f = new Field();
-            m.uuid = '0123456789012345';
-            m.timestamp = 10;
-            f.name = 'blah';
-            f.representation = "";
-            f.value_type = Field.ValueType.DOUBLE;
-            f.value_double.push(0.25);
-            m.fields = [f];
-
-            var buff = m.encode().toArrayBuffer();
-            var new_msg = Message.decode(buff);
-
-            // ??? this seems to work in test, but not in real code
-            // with real messages.  
-            expect(new_msg.fields[0]).toEqual(m.fields[0]);
-        });
     });
+
+});
+
+describe('ProtocolBuffer msg serializes fields', function() {
+    it ("with string", function() {
+        var expected = '0a:10:30:31:32:33:34:35:36:37:38:39:30:31:32:33:34:35:10:c0:84:3d:1a:04:64:65:6d:6f:52:14:0a:07:6d:79:66:69:65:6c:64:10:00:1a:00:22:05:68:65:6c:6c:6f';
+        var m = build_msg();
+        var f = m.fields[0];
+        f.value_type = Field.ValueType.STRING;
+        f.value_string.push("hello")
+        check(m, expected);
+    });
+
+    it ("with bytes", function() {
+        var expected = '0a:10:30:31:32:33:34:35:36:37:38:39:30:31:32:33:34:35:10:c0:84:3d:1a:04:64:65:6d:6f:52:19:0a:07:6d:79:66:69:65:6c:64:10:01:1a:00:2a:0a:73:6f:6d:65:5f:62:79:74:65:73';
+        var m = build_msg();
+        var f = m.fields[0];
+        f.value_type = Field.ValueType.BYTES;
+        f.value_bytes.push("some_bytes")
+        check(m, expected);
+    });
+
+    it ("with integer", function() {
+         var expected = '0a:10:30:31:32:33:34:35:36:37:38:39:30:31:32:33:34:35:10:c0:84:3d:1a:04:64:65:6d:6f:52:10:0a:07:6d:79:66:69:65:6c:64:10:02:1a:00:32:01:05';
+
+        var m = build_msg();
+        var f = m.fields[0];
+        f.value_type = Field.ValueType.INTEGER;
+        f.value_integer.push(5)
+        check(m, expected);
+
+    });
+    it ("with bool", function() {
+        var expected = '0a:10:30:31:32:33:34:35:36:37:38:39:30:31:32:33:34:35:10:c0:84:3d:1a:04:64:65:6d:6f:52:10:0a:07:6d:79:66:69:65:6c:64:10:04:1a:00:42:01:01';
+        var m = build_msg();
+        var f = m.fields[0];
+        f.value_type = Field.ValueType.BOOL;
+        f.value_bool.push(true);
+        check(m, expected);
+    });
+
+    it("with double", function() {
+        var EXPECTED_PYTHON_OUTPUT = '0a:10:30:31:32:33:34:35:36:37:38:39:30:31:32:33:34:35:10:c0:84:3d:1a:04:64:65:6d:6f:52:17:0a:07:6d:79:66:69:65:6c:64:10:03:1a:00:3a:08:1f:85:eb:51:b8:1e:09:40';
+        var m = build_msg();
+        var f = m.fields[0];
+        f.value_type = Field.ValueType.DOUBLE;
+        f.value_double.push(3.14);
+        check(m, EXPECTED_PYTHON_OUTPUT);
+    });
+
+    /*
+       md5 [1e:1f:08:1c:10:00:18:00:22:03:76:69:63:28:01:32:10:a8:73:fd:c8:54:28:2e:55:d6:63:68:e8:b9:1b:58:69:1f:0a:10:30:31:32:33:34:35:36:37:38:39:30:31:32:33:34:35:10:c0:84:3d:1a:04:68:6d:61:63]
+
+       md5 hmac [a8:73:fd:c8:54:28:2e:55:d6:63:68:e8:b9:1b:58:69]
+       ok
+       heka.tests.test_hmac.TestHmacMessages.test_hmac_signer_sha1 ...
+       sha1 [1e:23:08:1c:10:00:18:01:22:03:76:69:63:28:01:32:14:20:0b:3e:54:49:4c:06:89:72:1e:72:89:66:ee:ee:39:e1:0b:46:b3:1f:0a:10:30:31:32:33:34:35:36:37:38:39:30:31:32:33:34:35:10:c0:84:3d:1a:04:68:6d:61:63]
+
+       sha1 hmac [20:0b:3e:54:49:4c:06:89:72:1e:72:89:66:ee:ee:39:e1:0b:46:b3]
+       ok
+
+     */
+});
+
+describe('HMAC signatures match heka-py', function() {
+
+    it ("with sha1 hmac bytes", function() {
+    });
+
+    it ("with MD5 hmac bytes", function() {
+        var expected = "1e:1f:08:1c:10:00:18:00:22:03:76:69:63:28:01:32:10:a8:73:fd:c8:54:28:2e:55:d6:63:68:e8:b9:1b:58:69:1f:0a:10:30:31:32:33:34:35:36:37:38:39:30:31:32:33:34:35:10:c0:84:3d:1a:04:68:6d:61:63";
+        var expected_hmac = "a8:73:fd:c8:54:28:2e:55:d6:63:68:e8:b9:1b:58:69";
+
+
+        var m = hmac_msg();
+        // TODO: send it through the MD5 enabled stream
+    });
+
 });

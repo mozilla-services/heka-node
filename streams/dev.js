@@ -18,15 +18,15 @@ var base = require('./base');
 
 var StdoutSender = function(encoder, hmc) {
     this.stream = process.stdout;
-    this.init(encoder, hmc);
+    this.init(hmc);
 
     this._send_msg = function(text) {
         this.stream.write(text);
     }
 };
-base.abstractSender.call(StdoutSender.prototype);
+base.abstractStream.call(StdoutSender.prototype);
 
-var stdoutSenderFactory = function(config) {
+var stdoutStreamFactory = function(config) {
     var config = typeof config !== 'undefined' ? config : {};
     var encoder = config['encoder'];
     var hmc = config['hmc'];
@@ -36,15 +36,15 @@ var stdoutSenderFactory = function(config) {
 
 var FileSender = function(filePath, encoder, hmc) {
     this.stream = fs.createWriteStream(filePath);
-    this.init(encoder, hmc);
+    this.init(hmc);
 
     this._send_msg = function(text) {
         this.stream.write(text);
     }
 };
-base.abstractSender.call(FileSender.prototype)
+base.abstractStream.call(FileSender.prototype)
 
-var fileSenderFactory = function(sender_config) {
+var fileStreamFactory = function(sender_config) {
     var filePath = sender_config['filePath'];
     var encoder = sender_config['encoder'];
     var hmc = sender_config['hmc'];
@@ -53,23 +53,23 @@ var fileSenderFactory = function(sender_config) {
 };
 
 
-var DebugSender = function(encoder, hmc) {
-    this.init(encoder, hmc);
+var DebugStream = function(encoder, hmc) {
+    this.init(hmc);
     this.msgs = [];
     this._send_msg = function(text) {
         this.msgs.push(text);
     }
 };
-base.abstractSender.call(DebugSender.prototype);
+base.abstractStream.call(DebugStream.prototype);
 
-var debugSenderFactory = function(config) {
+var debugStreamFactory = function(config) {
     var config = typeof config !== 'undefined' ? config : {};
     var encoder = config['encoder'];
     var hmc = config['hmc'];
-    return new DebugSender(encoder, hmc);
+    return new DebugStream(encoder, hmc);
 };
 
 
-exports.fileSenderFactory = fileSenderFactory;
-exports.stdoutSenderFactory = stdoutSenderFactory;
-exports.debugSenderFactory = debugSenderFactory;
+exports.fileStreamFactory = fileStreamFactory;
+exports.stdoutStreamFactory = stdoutStreamFactory;
+exports.debugStreamFactory = debugStreamFactory;

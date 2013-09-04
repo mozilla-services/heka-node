@@ -4,3 +4,4 @@
 /docs/build
 docs/source/_themes
 node_modules
+/bin

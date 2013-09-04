@@ -16,11 +16,7 @@
  */
 "use strict";
 
-var horaa = require('horaa');
-var ByteBuffer = require('bytebuffer');
-var sys = require('util');
 var streams = require('../streams');
-var udpHoraa = horaa('dgram');
 var message = require('../message');
 var m_helpers = require('../message/helpers');
 
@@ -31,16 +27,6 @@ var compute_hex = m_helpers.compute_hex;
 
 var crypto = require('crypto');
 var encoders = require('../encoders');
-var jsonEncoder = encoders.jsonEncoder;
-
-
-var monkeyStdoutWrite = function(fakeWrite) {
-    var origWrite = process.stdout.write;
-    process.stdout.write = fakeWrite;
-    return function() {
-        process.stdout.write = origWrite;
-    };
-};
 
 function build_test_msg() {
     var msg = new Message();
@@ -67,24 +53,16 @@ describe('HMAC signatures are computed correctly', function() {
 
     it('with MD5', function() {
         var expected_hmac = "a8:73:fd:c8:54:28:2e:55:d6:63:68:e8:b9:1b:58:69";
+        var expected_msg_bytes = "1e:1d:08:1c:18:00:22:03:76:69:63:28:01:32:10:a8:73:fd:c8:54:28:2e:55:d6:63:68:e8:b9:1b:58:69:1f:0a:10:30:31:32:33:34:35:36:37:38:39:30:31:32:33:34:35:10:c0:84:3d:1a:04:68:6d:61:63";
+
         var msg = build_test_msg();
         var encoder = encoders.protobufEncoder;
         var msg_buffer = encoder.encode(msg);
-
         expect(msgs.length).toEqual(0);
-        var stream_buffer = stream.sendMessage(msg_buffer);
+        stream.sendMessage(msg_buffer);
         expect(msgs.length).toEqual(1);
-
         var full_msg_bytes = compute_hex(toArrayBuffer(msgs.pop()));
-
-        var decoded = m_helpers.decode_message(stream_buffer);
-        var header = decoded['header'];
-        var msg = decoded['message'];
-
-        expect(header.hmac_signer).toEqual(hmac_config.signer);
-        expect(header.hmac_key_version).toEqual(hmac_config.key_version);
-        expect(header.hmac_hash_function).toEqual(Header.HmacHashFunction.MD5);
-        expect(compute_hex(header.hmac.toArrayBuffer())).toEqual(expected_hmac);
+        expect(full_msg_bytes).toEqual(expected_msg_bytes);
     });
 
 })

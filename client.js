@@ -108,7 +108,7 @@ HekaClient.prototype.heka = function(type, opts) {
     if (opts.hostname === undefined) opts.hostname = this.hostname;
 
     var msg = new message.Message();
-    msg.timestamp = DateToNano(opts.timestamp);
+    msg.timestamp = opts.timestamp;
 
     msg.type = type;
     msg.logger = opts.logger;

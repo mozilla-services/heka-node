@@ -16,7 +16,7 @@
  */
 "use strict";
 
-var Senders = require('./streams/index');
+var Streams = require('./streams/index');
 var _ = require('underscore');
 var superscore = require('superscore');
 var config = require('./config');
@@ -65,15 +65,15 @@ function DateToNano(d) {
 }
 
 
-var HekaClient = function(sender, logger, severity, disabledTimers, filters)
+var HekaClient = function(stream, logger, severity, disabledTimers, filters)
 {
-    this.setup(sender, logger, severity, disabledTimers, filters);
+    this.setup(stream, logger, severity, disabledTimers, filters);
 };
 
-HekaClient.prototype.setup = function(sender, logger, severity, disabledTimers,
+HekaClient.prototype.setup = function(stream, logger, severity, disabledTimers,
         filters)
 {
-    this.sender = sender;
+    this.stream = stream;
     this.logger = typeof(logger) != 'undefined' ? logger : '';
     this.severity = typeof(severity) != 'undefined' ? severity : SEVERITY.INFORMATIONAL;
     this.disabledTimers = typeof(disabledTimers) != 'undefined' ? disabledTimers : [];
@@ -85,15 +85,15 @@ HekaClient.prototype.setup = function(sender, logger, severity, disabledTimers,
 
 };
 
-HekaClient.prototype._sendMessage = function(msg) {
-    // Apply any filters and pass on the sender if message gets through
+HekaClient.prototype._sendMessage = function(msg_obj) {
+    // Apply any filters and pass on the stream if message gets through
     for (var i=0; i<this.filters.length; i++) {
         var filter = this.filters[i];
-        if (!filter(msg)) {
+        if (!filter(msg_obj)) {
             return;
         };
     };
-    this.sender.sendMessage(msg);
+    this.stream.sendMessage(msg_obj.encode().toBuffer());
 };
 
 HekaClient.prototype.heka = function(type, opts) {
@@ -125,8 +125,9 @@ HekaClient.prototype.heka = function(type, opts) {
     msg.hostname = opts.hostname;
 
     msg.uuid = '0000000000000000';
-    var msg_encoded = msg.encode();
-    msg.uuid = compute_oid_uuid(msg_encoded.toBuffer());
+
+    var msg_buffer = msg.encode().toBuffer();
+    msg.uuid = compute_oid_uuid(msg_buffer);
 
     this._sendMessage(msg);
 };
@@ -249,4 +250,4 @@ exports.DateToNano = DateToNano;
 exports.HekaClient = HekaClient;
 exports.clientFromJsonConfig = config.clientFromJsonConfig;
 exports.SEVERITY = SEVERITY;
-exports.Senders = Senders;
+exports.Streams = Streams;

@@ -33,6 +33,6 @@
         "horaa": ">=0.1.1alpha"
     },
     "scripts": {
-        "test": "jasmine-node tests"
+        "test": "jasmine-node tests/config.spec.js"
     }
 }

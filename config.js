@@ -16,7 +16,6 @@
  */
 "use strict";
 var clientModule = require('./client');
-var globalConfig = {};
 var resolver = require('./resolver');
 
 var resolveName = resolver.resolveName;
@@ -28,43 +27,28 @@ var getattr = function(obj, attr, defaultValue) {
 };
 
 
-
-var getGlobalConfig = function() {
-    return globalConfig;
-};
-
-var senderFromConfig = function(config) {
+var streamFromConfig = function(config) {
     if (typeof(config.factory) == 'undefined')
     {
         throw new Error("factory attribute is missing from config");
     }
 
-    var senderFactory = resolveName(config.factory);
-    if (senderFactory === undefined) {
-        throw new Error("Unable to resolve the senderFactory: ["+config.factory+"]")
+    var streamFactory = resolveName(config.factory);
+    if (streamFactory === undefined) {
+        throw new Error("Unable to resolve the streamFactory: ["+config.factory+"]")
     }
-    return senderFactory(config);
+    var stream = streamFactory(config);
+    return stream;
 };
 
-var clientFromJsonConfig = function(config, client, clearGlobal) {
+var clientFromJsonConfig = function(config, client) {
     config = JSON.parse(config);
-    var senderConfig = getattr(config, 'sender');
-    var sender = senderFromConfig(senderConfig);
+    var streamConfig = getattr(config, 'stream');
+    var stream = streamFromConfig(streamConfig);
     var logger = getattr(config, 'logger', '');
     var severity = getattr(config, 'severity', 6);
     var disabledTimers = getattr(config, 'disabledTimers', []);
     var plugins = getattr(config, 'plugins');
-    var newGlobals = getattr(config, 'global');
-
-    clearGlobal = typeof(clearGlobal) !== 'undefined' ? clearGlobal : false;
-    if (clearGlobal) {
-        globalConfig = {};
-    };
-    for (var attr in newGlobals) {
-        if (newGlobals.hasOwnProperty(attr)) {
-            globalConfig[attr] = newGlobals[attr];
-        };
-    };
 
     var filterNames = getattr(config, 'filters', []);
     var filters = [];
@@ -75,10 +59,10 @@ var clientFromJsonConfig = function(config, client, clearGlobal) {
     };
 
     if (typeof(client) === 'undefined') {
-        client = new clientModule.HekaClient(sender, logger, severity,
+        client = new clientModule.HekaClient(stream, logger, severity,
                                                disabledTimers, filters);
     } else {
-        client.setup(sender, logger, severity, disabledTimers, filters);
+        client.setup(stream, logger, severity, disabledTimers, filters);
     };
 
     for (var name in plugins) {
@@ -93,6 +77,5 @@ var clientFromJsonConfig = function(config, client, clearGlobal) {
     return client;
 };
 
-exports.getGlobalConfig = getGlobalConfig;
 exports.resolveName = resolveName;
 exports.clientFromJsonConfig = clientFromJsonConfig;

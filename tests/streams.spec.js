@@ -194,3 +194,9 @@ describe('UdpStream', function() {
         expect(mockUdpSocket.ports[1]).toEqual(5565);
     });
 });
+
+describe('FileStream', function() {
+    it('encodes messages', function() {
+        throw "NotImplementedError";
+    });
+});

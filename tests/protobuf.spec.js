@@ -198,33 +198,5 @@ describe('ProtocolBuffer msg serializes fields', function() {
         f.value_double.push(3.14);
         check(m, EXPECTED_PYTHON_OUTPUT);
     });
-
-    /*
-       md5 [1e:1f:08:1c:10:00:18:00:22:03:76:69:63:28:01:32:10:a8:73:fd:c8:54:28:2e:55:d6:63:68:e8:b9:1b:58:69:1f:0a:10:30:31:32:33:34:35:36:37:38:39:30:31:32:33:34:35:10:c0:84:3d:1a:04:68:6d:61:63]
-
-       md5 hmac [a8:73:fd:c8:54:28:2e:55:d6:63:68:e8:b9:1b:58:69]
-       ok
-       heka.tests.test_hmac.TestHmacMessages.test_hmac_signer_sha1 ...
-       sha1 [1e:23:08:1c:10:00:18:01:22:03:76:69:63:28:01:32:14:20:0b:3e:54:49:4c:06:89:72:1e:72:89:66:ee:ee:39:e1:0b:46:b3:1f:0a:10:30:31:32:33:34:35:36:37:38:39:30:31:32:33:34:35:10:c0:84:3d:1a:04:68:6d:61:63]
-
-       sha1 hmac [20:0b:3e:54:49:4c:06:89:72:1e:72:89:66:ee:ee:39:e1:0b:46:b3]
-       ok
-
-     */
 });
 
-describe('HMAC signatures match heka-py', function() {
-
-    it ("with sha1 hmac bytes", function() {
-    });
-
-    it ("with MD5 hmac bytes", function() {
-        var expected = "1e:1f:08:1c:10:00:18:00:22:03:76:69:63:28:01:32:10:a8:73:fd:c8:54:28:2e:55:d6:63:68:e8:b9:1b:58:69:1f:0a:10:30:31:32:33:34:35:36:37:38:39:30:31:32:33:34:35:10:c0:84:3d:1a:04:68:6d:61:63";
-        var expected_hmac = "a8:73:fd:c8:54:28:2e:55:d6:63:68:e8:b9:1b:58:69";
-
-
-        var m = hmac_msg();
-        // TODO: send it through the MD5 enabled stream
-    });
-
-});

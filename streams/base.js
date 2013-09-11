@@ -24,9 +24,11 @@ var HASHNAME_TO_ENUM = { 'sha1': message.Header.HmacHashFunction.SHA1,
 
 var abstractStream = function() {
     /*
-     * This is an abstract sender which all senders should reuse.
-     * We need to enforce that all senders *must* have a default
-     * encoder of JSON for serialization over the wire.
+     * This is an abstract stream which all streams should reuse.
+     * Concrete Stream implementations must provide a _send_msg(buff)
+     * method which accepts a Node.js Buffer object with a completely
+     * serialized message (and header if your wireformat requires
+     * one).
      */
     this.init = function(hmc) {
         if (hmc === undefined) {

@@ -51,7 +51,7 @@ describe('HMAC signatures are computed correctly', function() {
         msgs.length = 0;
     });
 
-    it('with MD5', function() {
+    it('with MD5 hmac', function() {
         var expected_hmac = "a8:73:fd:c8:54:28:2e:55:d6:63:68:e8:b9:1b:58:69";
         var expected_msg_bytes = "1e:1d:08:1c:18:00:22:03:76:69:63:28:01:32:10:a8:73:fd:c8:54:28:2e:55:d6:63:68:e8:b9:1b:58:69:1f:0a:10:30:31:32:33:34:35:36:37:38:39:30:31:32:33:34:35:10:c0:84:3d:1a:04:68:6d:61:63";
 
@@ -63,6 +63,11 @@ describe('HMAC signatures are computed correctly', function() {
         expect(msgs.length).toEqual(1);
         var full_msg_bytes = compute_hex(toArrayBuffer(msgs.pop()));
         expect(full_msg_bytes).toEqual(expected_msg_bytes);
+    });
+
+
+    it('with SHA1 hmac', function() {
+        throw "NotImplementedError";
     });
 
 })

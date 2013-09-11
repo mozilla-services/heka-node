@@ -16,7 +16,7 @@
 var fs = require('fs');
 var base = require('./base');
 
-var StdoutSender = function(encoder, hmc) {
+var StdoutStream = function(encoder, hmc) {
     this.stream = process.stdout;
     this.init(hmc);
 
@@ -24,17 +24,17 @@ var StdoutSender = function(encoder, hmc) {
         this.stream.write(text);
     }
 };
-base.abstractStream.call(StdoutSender.prototype);
+base.abstractStream.call(StdoutStream.prototype);
 
 var stdoutStreamFactory = function(config) {
     var config = typeof config !== 'undefined' ? config : {};
     var encoder = config['encoder'];
     var hmc = config['hmc'];
-    return new StdoutSender(encoder, hmc);
+    return new StdoutStream(encoder, hmc);
 };
 
 
-var FileSender = function(filePath, encoder, hmc) {
+var FileStream = function(filePath, encoder, hmc) {
     this.stream = fs.createWriteStream(filePath);
     this.init(hmc);
 
@@ -42,14 +42,14 @@ var FileSender = function(filePath, encoder, hmc) {
         this.stream.write(text);
     }
 };
-base.abstractStream.call(FileSender.prototype)
+base.abstractStream.call(FileStream.prototype)
 
 var fileStreamFactory = function(sender_config) {
     var filePath = sender_config['filePath'];
     var encoder = sender_config['encoder'];
     var hmc = sender_config['hmc'];
 
-    return new FileSender(filePath, encoder, hmc);
+    return new FileStream(filePath, encoder, hmc);
 };
 
 

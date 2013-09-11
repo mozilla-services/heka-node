@@ -17,28 +17,11 @@
 
 var configModule = require('../config.js');
 
-var mockSender = {
-    foo: 'bar',
-    msgs: [],
-    sendMessage: function(msg) {
-        this.msgs.push(msg);
-    },
-    reset: function() {
-        this.foo = 'bar';
-        this.msgs = [];
-    }
-};
+var m_helpers = require('../message/helpers');
 
-var makeMockSender = function(senderConfig) {
-    if (typeof senderConfig.foo !== 'undefined') {
-        mockSender.foo = senderConfig.foo;
-    };
-    if (typeof senderConfig.hmc !== 'undefined') {
-        mockSender.hmc = senderConfig.hmc;
-    };
-    return mockSender;
-};
-var makeMockSenderString = './tests/config.spec:makeMockSender';
+var path = require('path');
+module.paths.push(path.resolve('..'))
+var makeMockStreamString = './streams:debugStreamFactory';
 
 var payloadIsFilterProvider = function(config) {
     var payloadIsFilter = function(msg) {
@@ -62,86 +45,37 @@ var showLoggerProviderString = './tests/config.spec:showLoggerProvider'
 
 describe('config', function() {
 
-    beforeEach(function() {
-        mockSender.reset();
-    });
-
     it('sets up a basic client', function() {
         var config = {
-            'sender': {'factory': makeMockSenderString},
+            'stream': {'factory': makeMockStreamString},
             'logger': 'test',
             'severity': 5
         };
         var jsonConfig = JSON.stringify(config);
         var client = configModule.clientFromJsonConfig(jsonConfig);
         expect(client.logger).toEqual(config.logger);
-        expect(client.sender).toBe(mockSender);
-        expect(client.sender.foo).toEqual('bar');
         expect(client.severity).toEqual(config.severity);
+
         var msgOpts = {'payload': 'whadidyusay?'};
         var type = 'test-type'
+
         client.heka(type, msgOpts);
-        expect(client.sender.msgs.length).toEqual(1);
-        var msg = client.sender.msgs[0]
+
+        expect(client.stream.msgs.length).toEqual(1);
+
+        var wire_buff = client.stream.msgs.pop();
+        var decoded = m_helpers.decode_message(wire_buff);
+        var header = decoded['header'];
+        var msg = decoded['message'];
         expect(msg.type).toEqual(type);
         expect(msg.payload).toEqual(msgOpts.payload);
         expect(msg.severity).toEqual(config.severity);
     });
 
-    it('configures sender correctly', function() {
-        var config = {
-            'sender': {'factory': makeMockSenderString,
-                       'foo': 'bawlp'},
-            'logger': 'test'
-        };
-        var jsonConfig = JSON.stringify(config);
-        var client = configModule.clientFromJsonConfig(jsonConfig);
-        expect(mockSender.foo).toEqual('bawlp');
-    });
-
-    it('sets, updates, and clears globals', function() {
-        var mergeObjects = function(obs) {
-            var result = {};
-            for (var i=0; i<obs.length; i++) {
-                var ob = obs[i];
-                for (var attr in ob) {
-                    if (ob.hasOwnProperty(attr)) {
-                        result[attr] = ob[attr];
-                    };
-                };
-            };
-            return result;
-        };
-
-        var globalParam1 = {'some': 'globalvalue'};
-        var config1 = {
-            'sender': {'factory': makeMockSenderString},
-            'logger': 'test',
-            'global': globalParam1
-        };
-        var jsonConfig = JSON.stringify(config1);
-        var client = configModule.clientFromJsonConfig(jsonConfig);
-        expect(configModule.getGlobalConfig()).toEqual(globalParam1);
-
-        var globalParam2 = {'another': 'globalsetting'};
-        var config2 = {
-            'sender': {'factory': makeMockSenderString},
-            'logger': 'test',
-            'global': globalParam2
-        };
-        jsonConfig = JSON.stringify(config2)
-        client = configModule.clientFromJsonConfig(jsonConfig, client);
-        var expected = mergeObjects([globalParam1, globalParam2]);
-        expect(configModule.getGlobalConfig()).toEqual(expected);
-
-        client = configModule.clientFromJsonConfig(jsonConfig, client, true);
-        expect(configModule.getGlobalConfig()).toEqual(globalParam2);
-    });
-
     it('sets up filters', function() {
         var filterConfig = {'payload': 'nay!'};
         var config = {
-            'sender': {'factory': makeMockSenderString},
+            'stream': {'factory': makeMockStreamString},
             'logger': 'test',
             'filters': [[payloadIsFilterString, filterConfig]]
         };
@@ -151,14 +85,17 @@ describe('config', function() {
         expect(filters.length).toEqual(1);
         client.heka('test', {'payload': 'aye'});
         client.heka('test', {'payload': 'nay!'});
-        expect(client.sender.msgs.length).toEqual(1);
-        expect(client.sender.msgs[0].payload).toEqual('aye');
+        expect(client.stream.msgs.length).toEqual(1);
+
+        var wire_buff = client.stream.msgs.pop();
+        var decoded = m_helpers.decode_message(wire_buff);
+        expect(decoded['message'].payload).toEqual('aye');
     });
 
     it('sets up plugins', function() {
         var customLabel = 'LOGGER, YO';
         var config = {
-            'sender': {'factory': makeMockSenderString},
+            'stream': {'factory': makeMockStreamString},
             'logger': 'test',
             'plugins': {'showLogger': {'provider': showLoggerProviderString,
                                        'label': customLabel}}
@@ -172,7 +109,7 @@ describe('config', function() {
     it('honors plugin `override` settings', function() {
         var customLabel = 'LOGGER, YO'
         var config = {
-            'sender': {'factory': makeMockSenderString},
+            'stream': {'factory': makeMockStreamString},
             'logger': 'test',
             'plugins': {'incr': {'provider': showLoggerProviderString,
                                  'label': customLabel}}
@@ -190,7 +127,7 @@ describe('config', function() {
 
     it('raises errors when no factory attribute exists', function() {
         var config = {
-            'sender': {}
+            'stream': {}
         };
         var jsonConfig = JSON.stringify(config);
         expect(function() {
@@ -199,12 +136,11 @@ describe('config', function() {
 
     });
 
-
     it('sets up filters and plugins', function() {
         var customLabel = 'LOGGER, YO'
         var filterConfig = {'payload': 'nay!'};
         var config = {
-            'sender': {'factory': makeMockSenderString},
+            'stream': {'factory': makeMockStreamString},
             'logger': 'test',
             'filters': [[payloadIsFilterString, filterConfig]],
             'plugins': {'showLogger': {'provider': showLoggerProviderString,
@@ -216,8 +152,14 @@ describe('config', function() {
         expect(filters.length).toEqual(1);
         client.heka('test', {'payload': 'aye'});
         client.heka('test', {'payload': 'nay!'});
-        expect(client.sender.msgs.length).toEqual(1);
-        expect(client.sender.msgs[0].payload).toEqual('aye');
+        expect(client.stream.msgs.length).toEqual(1);
+
+        var wire_buff = client.stream.msgs.pop();
+        var decoded = m_helpers.decode_message(wire_buff);
+        var header = decoded['header'];
+        var msg = decoded['message'];
+
+        expect(msg.payload).toEqual('aye');
         expect(client._dynamicMethods['showLogger']).not.toBe(undefined);
         expect(client.showLogger()).toEqual(customLabel+': '+'test');
 
@@ -225,6 +167,5 @@ describe('config', function() {
 
 });
 
-exports.makeMockSender = makeMockSender;
 exports.payloadIsFilterProvider = payloadIsFilterProvider;
 exports.showLoggerProvider = showLoggerProvider;

@@ -87,4 +87,8 @@ describe('HMAC signatures are computed correctly', function() {
         expect(compute_hex(header.hmac.toArrayBuffer())).toEqual(expected_hmac);
     });
 
+    it('with SHA1', function() {
+        throw "NotImplementedError";
+    })
+
 })

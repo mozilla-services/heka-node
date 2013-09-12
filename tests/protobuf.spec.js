@@ -21,6 +21,7 @@ var Message = message.Message;
 var Field = message.Field;
 var ProtoBuf = require("protobufjs");
 var ByteBuffer = require("bytebuffer");
+var Long = require('Long');
 
 function build_msg() {
     var m = new Message();
@@ -35,11 +36,12 @@ function build_msg() {
     return m;
 }
 
-function hmac_msg() {
+function int64_ts_msg(ts_as_ns) {
+    // This generate a message with an int64 timestamp
     var m = new Message();
     m.uuid = '0123456789012345';
-    m.type = 'hmac';
-    m.timestamp = 1000000;
+    m.type = 'demo';
+    m.setTimestamp(ts_as_ns);
     return m;
 }
 
@@ -198,5 +200,17 @@ describe('ProtocolBuffer msg serializes fields', function() {
         f.value_double.push(3.14);
         check(m, EXPECTED_PYTHON_OUTPUT);
     });
+
 });
 
+describe('ProtocolBuffer msg timestamps', function() {
+    it("with a full int64 value", function() {
+        var ts_as_ns = 133306560000000000;
+        var msg = int64_ts_msg(ts_as_ns);
+        var buff = msg.encode().toArrayBuffer();
+        var buff_hex = compute_hex(buff);
+
+        var new_msg = Message.decode(buff);
+        expect(new_msg.timestamp.toNumber()).toEqual(ts_as_ns);
+    });
+});

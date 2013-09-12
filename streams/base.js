@@ -15,12 +15,9 @@
  ***** END LICENSE BLOCK *****
  */
 
-var message = require('../message');
 var crypto = require('crypto');
 var helpers = require('../message/helpers');
 
-var HASHNAME_TO_ENUM = { 'sha1': message.Header.HmacHashFunction.SHA1,
-    'md5': message.Header.HmacHashFunction.MD5};
 
 var abstractStream = function() {
     /*
@@ -38,6 +35,8 @@ var abstractStream = function() {
         }
     };
 
+    var message = require('../message');
+
     this.buildHeader = function(msg_buff, msg_length) {
         var header = new message.Header();
 
@@ -50,8 +49,13 @@ var abstractStream = function() {
 
             header.hmac_key_version = this.hmc.key_version;
 
-            // TODO: handle the case where we don't have a match to
-            // the hash function
+            // TODO: There's some kind of circular/lazy import problem
+            // with referencing the message.Header object so we have
+            // to bind as late as possible
+            var HASHNAME_TO_ENUM = { 'sha1': message.Header.HmacHashFunction.SHA1,
+                'md5': message.Header.HmacHashFunction.MD5};
+
+
             header.hmac_hash_function = HASHNAME_TO_ENUM[this.hmc.hash_function];
             var digest = new Buffer(hmac.digest('binary'), 'binary')
             header.hmac = digest;

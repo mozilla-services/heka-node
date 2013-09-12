@@ -37,7 +37,7 @@ function build_test_msg() {
 }
 
 
-describe('HMAC signatures are computed correctly', function() {
+describe('Whole messages with HMAC signatures are computed', function() {
     var hmac_config = {signer: 'vic',
         key_version: 1,
         hash_function: 'md5',

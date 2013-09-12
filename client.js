@@ -61,6 +61,8 @@ var PB_FIELDMAP = {0: 'value_string',
                    4: 'value_bool'};
 
 function DateToNano(d) {
+    // TODO: this needs to return an instance of Long.js's Long object
+    // as JS doesn't support int64 out of the box
     return d.getTime() * 1000000;
 }
 

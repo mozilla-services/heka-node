@@ -108,7 +108,7 @@ describe('client', function() {
         expect(otherClient.severity).toEqual(otherSeverity);
     });
 
-    it('delivers to sender', function() {
+    it('delivers to stream', function() {
         var timestamp = heka.DateToNano(new Date(Date.UTC(2012,2,30)));
         var type = 'vanilla'
         var payload = 'drippy dreamy icy creamy';

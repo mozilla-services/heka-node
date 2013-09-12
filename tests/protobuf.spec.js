@@ -21,7 +21,7 @@ var Message = message.Message;
 var Field = message.Field;
 var ProtoBuf = require("protobufjs");
 var ByteBuffer = require("bytebuffer");
-var Long = require('Long');
+var Long = require('long');
 
 function build_msg() {
     var m = new Message();

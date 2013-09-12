@@ -27,7 +27,7 @@ var resolveName = resolver.resolveName;
 var helpers = require('../message/helpers');
 
 var path = require('path');
-var Long = require('Long');
+var Long = require('long');
 
 module.paths.push(path.resolve('..'))
 

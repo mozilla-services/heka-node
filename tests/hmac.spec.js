@@ -32,7 +32,6 @@ var compute_hex = m_helpers.compute_hex;
 var encoders = require('../encoders');
 var jsonEncoder = encoders.jsonEncoder;
 
-
 var monkeyStdoutWrite = function(fakeWrite) {
     var origWrite = process.stdout.write;
     process.stdout.write = fakeWrite;
@@ -85,9 +84,42 @@ describe('HMAC signatures are computed', function() {
         expect(header.hmac_hash_function).toEqual(Header.HmacHashFunction.MD5);
         expect(compute_hex(header.hmac.toArrayBuffer())).toEqual(expected_hmac);
     });
+});
+
+describe('HMAC signatures are computed', function() {
+    var hmac_config = {signer: 'vic',
+        key_version: 1,
+        hash_function: 'sha1',
+        key: 'some_key'};
+
+    var stream = streams.debugStreamFactory({hmc: hmac_config});
+
+    var msgs = stream.msgs;
+
+    beforeEach(function() {
+        msgs.length = 0;
+    });
 
     it('with SHA1', function() {
-        throw "NotImplementedError";
+        var expected_hmac = "20:0b:3e:54:49:4c:06:89:72:1e:72:89:66:ee:ee:39:e1:0b:46:b3";
+        var msg = build_test_msg();
+        var encoder = encoders.protobufEncoder;
+        var msg_buffer = encoder.encode(msg);
+
+        expect(msgs.length).toEqual(0);
+        var stream_buffer = stream.sendMessage(msg_buffer);
+        expect(msgs.length).toEqual(1);
+
+        var full_msg_bytes = compute_hex(toArrayBuffer(msgs.pop()));
+
+        var decoded = m_helpers.decode_message(stream_buffer);
+        var header = decoded['header'];
+        var msg = decoded['message'];
+
+        expect(header.hmac_signer).toEqual(hmac_config.signer);
+        expect(header.hmac_key_version).toEqual(hmac_config.key_version);
+        expect(header.hmac_hash_function).toEqual(Header.HmacHashFunction.SHA1);
+        expect(compute_hex(header.hmac.toArrayBuffer())).toEqual(expected_hmac);
     })
 
 })

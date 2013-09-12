@@ -37,7 +37,7 @@ describe('client', function() {
         var streamFactory = resolveName(makeMockStreamString);
         return streamFactory({});
     }
-    var mockStream = makeMockStream();
+    var mockStream = null;
 
     var loggerVal = 'bogus';
     var client;

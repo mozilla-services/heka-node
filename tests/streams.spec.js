@@ -20,6 +20,7 @@ var horaa = require('horaa');
 var ByteBuffer = require('bytebuffer');
 var streams = require('../streams');
 var udpHoraa = horaa('dgram');
+var fsHoraa = horaa('fs');
 
 var message = require('../message');
 var Message = message.Message;
@@ -196,7 +197,39 @@ describe('UdpStream', function() {
 });
 
 describe('FileStream', function() {
+    var mockFileStream = {
+        msgs : [],
+        write: function(msg_buff) {
+            this.msgs.push(msg_buff);
+        },
+        close: function() {
+        }
+    };
+
+    beforeEach(function() {
+        mockFileStream.msgs.length = 0;
+        fsHoraa.hijack('createWriteStream', function(fpath) {
+            return mockFileStream;
+        });
+    });
+
+    afterEach(function() {
+        fsHoraa.restore('createWriteStream');
+    });
+
     it('encodes messages', function() {
-        throw "NotImplementedError";
+        var testMsg = build_test_msg();
+        var stream = streams.fileStreamFactory();
+
+        var encoder = encoders.protobufEncoder;
+        var streamdata = encoder.encode(testMsg);
+
+        expect(mockFileStream.msgs.length).toEqual(0);
+        stream.sendMessage(streamdata);
+        expect(mockFileStream.msgs.length).toEqual(1);
+
+        var wire_buff = mockFileStream.msgs.pop();
+        var expected_msg_buff = encoders.protobufEncoder.encode(testMsg);
+        check_message_bytes(wire_buff, expected_msg_buff);
     });
 });

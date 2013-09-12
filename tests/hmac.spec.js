@@ -29,7 +29,6 @@ var Header = message.Header;
 var toArrayBuffer = m_helpers.toArrayBuffer;
 var compute_hex = m_helpers.compute_hex;
 
-var crypto = require('crypto');
 var encoders = require('../encoders');
 var jsonEncoder = encoders.jsonEncoder;
 

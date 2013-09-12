@@ -38,21 +38,16 @@ function build_test_msg() {
 
 
 describe('Whole messages with HMAC signatures are computed', function() {
-    var hmac_config = {signer: 'vic',
-        key_version: 1,
-        hash_function: 'md5',
-        key: 'some_key'};
 
-    var stream = streams.debugStreamFactory({hmc: hmac_config});
-
-    var msgs = stream.msgs;
-
-    beforeEach(function() {
-        msgs.length = 0;
-    });
 
     it('with MD5 hmac', function() {
-        var expected_hmac = "a8:73:fd:c8:54:28:2e:55:d6:63:68:e8:b9:1b:58:69";
+        var hmac_config = {signer: 'vic',
+            key_version: 1,
+        hash_function: 'md5',
+        key: 'some_key'};
+        var stream = streams.debugStreamFactory({hmc: hmac_config});
+        var msgs = stream.msgs;
+
         var expected_msg_bytes = "1e:1d:08:1c:18:00:22:03:76:69:63:28:01:32:10:a8:73:fd:c8:54:28:2e:55:d6:63:68:e8:b9:1b:58:69:1f:0a:10:30:31:32:33:34:35:36:37:38:39:30:31:32:33:34:35:10:c0:84:3d:1a:04:68:6d:61:63";
 
         var msg = build_test_msg();
@@ -67,7 +62,23 @@ describe('Whole messages with HMAC signatures are computed', function() {
 
 
     it('with SHA1 hmac', function() {
-        throw "NotImplementedError";
+        var hmac_config = {signer: 'vic',
+            key_version: 1,
+            hash_function: 'sha1',
+            key: 'some_key'};
+        var stream = streams.debugStreamFactory({hmc: hmac_config});
+        var msgs = stream.msgs;
+
+        var expected_msg_bytes = "1e:21:08:1c:18:01:22:03:76:69:63:28:01:32:14:20:0b:3e:54:49:4c:06:89:72:1e:72:89:66:ee:ee:39:e1:0b:46:b3:1f:0a:10:30:31:32:33:34:35:36:37:38:39:30:31:32:33:34:35:10:c0:84:3d:1a:04:68:6d:61:63";
+
+        var msg = build_test_msg();
+        var encoder = encoders.protobufEncoder;
+        var msg_buffer = encoder.encode(msg);
+        expect(msgs.length).toEqual(0);
+        stream.sendMessage(msg_buffer);
+        expect(msgs.length).toEqual(1);
+        var full_msg_bytes = compute_hex(toArrayBuffer(msgs.pop()));
+        expect(full_msg_bytes).toEqual(expected_msg_bytes);
     });
 
 })

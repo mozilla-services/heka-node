@@ -36,6 +36,6 @@
         "horaa": ">=0.1.1alpha"
     },
     "scripts": {
-        "test": "jasmine-node tests"
+        "test": "node_modules/jasmine-node/bin/jasmine-node tests"
     }
 }

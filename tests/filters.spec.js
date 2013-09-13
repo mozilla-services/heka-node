@@ -16,7 +16,7 @@
 "use strict";
 
 var filters = require('../filters.js');
-
+var Message = require('../message').Message;
 
 var countTrues = function(filter, msgs) {
     var trues = 0;
@@ -31,9 +31,14 @@ var countTrues = function(filter, msgs) {
 
 describe('severityMax filter', function() {
 
-    var msgs = [{'severity': 0}, {'severity': 1}, {'severity': 2},
-                {'severity': 3}, {'severity': 4}, {'severity': 5},
-                {'severity': 6}, {'severity': 7}];
+    var msgs = [new Message({'severity': 0}),
+                new Message({'severity': 1}),
+                new Message({'severity': 2}),
+                new Message({'severity': 3}),
+                new Message({'severity': 4}),
+                new Message({'severity': 5}),
+                new Message({'severity': 6}),
+                new Message({'severity': 7})];
 
     it('filters correctly', function() {
         for (var i=0; i<msgs.length; i++) {
@@ -55,8 +60,10 @@ describe('severityMax filter', function() {
 
 describe('typeBlacklist filter', function() {
 
-    var msgs = [{'type': 'foo'}, {'type': 'bar'}, {'type': 'baz'},
-                {'type': 'bawlp'}];
+    var msgs = [new Message({'type': 'foo'}),
+                new Message({'type': 'bar'}),
+                new Message({'type': 'baz'}),
+                new Message({'type': 'bawlp'})];
 
     it('filters correctly', function() {
         var config = {'types': {'foo': 0}};
@@ -74,8 +81,10 @@ describe('typeBlacklist filter', function() {
 
 describe('typeWhitelist filter', function() {
 
-    var msgs = [{'type': 'foo'}, {'type': 'bar'}, {'type': 'baz'},
-                {'type': 'bawlp'}];
+    var msgs = [new Message({'type': 'foo'}),
+                new Message({'type': 'bar'}),
+                new Message({'type': 'baz'}),
+                new Message({'type': 'bawlp'})];
 
     it('filters correctly', function() {
         var config = {'types': {'foo': 0}};
@@ -93,8 +102,10 @@ describe('typeWhitelist filter', function() {
 
 describe('typeSeverityMax filter', function() {
 
-    var msgs = [{'type': 'foo', 'severity': 0}, {'type': 'foo', 'severity': 6},
-                {'type': 'bar', 'severity': 0}, {'type': 'bar', 'severity': 6}];
+    var msgs = [new Message({'type': 'foo', 'severity': 0}),
+                new Message({'type': 'foo', 'severity': 6}),
+                new Message({'type': 'bar', 'severity': 0}),
+                new Message({'type': 'bar', 'severity': 6})];
 
     if('filters correctly', function() {
         var config = {'types': {'foo': {'severity': 3}}};

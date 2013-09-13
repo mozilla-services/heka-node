@@ -17,7 +17,7 @@
     "main": "./client.js",
     "files": ["protobuf/*.proto",
               "message/*.js",
-              "stream/*.js",
+              "streams/*.js",
               "encoders/*.js",
               "tests/*.js",
               "*.js"],

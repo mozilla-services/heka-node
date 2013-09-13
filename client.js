@@ -16,7 +16,7 @@
  */
 "use strict";
 
-var Streams = require('./streams/index');
+var streams = require('./streams/index');
 var _ = require('underscore');
 var superscore = require('superscore');
 var config = require('./config');
@@ -252,4 +252,4 @@ exports.DateToNano = DateToNano;
 exports.HekaClient = HekaClient;
 exports.clientFromJsonConfig = config.clientFromJsonConfig;
 exports.SEVERITY = SEVERITY;
-exports.Streams = Streams;
+exports.streams = streams;

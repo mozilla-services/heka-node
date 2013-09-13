@@ -166,6 +166,11 @@ describe('config', function() {
 
     });
 
+    it('honors disabled timer settings', function() {
+        throw "NotImplementedError";
+    });
+
+
 });
 
 exports.payloadIsFilterProvider = payloadIsFilterProvider;

@@ -16,6 +16,7 @@
  */
 "use strict";
 
+var heka = require('../client.js');
 var horaa = require('horaa');
 var ByteBuffer = require('bytebuffer');
 var streams = require('../streams');
@@ -32,6 +33,9 @@ var encoders = require('../encoders');
 
 var uuid = require('../uuid');
 var compute_oid_uuid = uuid.compute_oid_uuid;
+
+var path = require('path');
+module.paths.push(path.resolve('..'))
 
 var monkeyStdoutWrite = function(fakeWrite) {
     var origWrite = process.stdout.write;
@@ -68,6 +72,23 @@ function check_message_bytes(wire_buff, expected_msg_buff) {
     expect(wire_msg_hex).toEqual(expected_msg_hex);
 }
 
+describe('StdoutStream configuration', function() {
+    it('is loadable by config.js', function() {
+        // Note that the stream factory string is non-standard as
+        // we're running from a testcase.  You will normally need to
+        // use something like 'heka:streams.udpStreamFactory' from
+        // your own application
+        var config = {
+            'stream': {'factory': './client:streams.stdoutStreamFactory'},
+            'logger': 'test',
+            'severity': heka.SEVERITY.INFORMATIONAL
+        };
+        var jsonConfig = JSON.stringify(config);
+        var client = heka.clientFromJsonConfig(jsonConfig);
+        expect(client.stream._is_stdout).toBeTruthy();
+    });
+});
+
 describe('StdoutStream', function() {
 
     var msgs = [];
@@ -84,6 +105,7 @@ describe('StdoutStream', function() {
     afterEach(function() {
         unhook();
     });
+
 
     it('encodes messages', function() {
         var testMsg = build_test_msg();
@@ -136,8 +158,26 @@ describe('UdpStream', function() {
         udpHoraa.restore('createSocket');
     });
 
+    it('is loadable by config.js', function() {
+        // Note that the stream factory string is non-standard as
+        // we're running from a testcase.  You will normally need to
+        // use something like 'heka:streams.udpStreamFactory' from
+        // your own application
+        var config = {
+            'stream': {'factory': './client:streams.udpStreamFactory',
+                       'hosts': ['localhost', '10.0.0.1'],
+                       'ports': [5565],
+            },
+            'logger': 'test',
+            'severity': heka.SEVERITY.INFORMATIONAL
+        };
+        var jsonConfig = JSON.stringify(config);
+        var client = heka.clientFromJsonConfig(jsonConfig);
+        // The UDP configuration should have a dgram object
+        expect(client.stream.dgram).not.toBeNull();
+    });
 
-    it('sends messages', function() {
+    it('encodes messages', function() {
         var stream = streams.udpStreamFactory({hosts: 'localhost', 
                                                ports: 5565});
         var encoder = encoders.protobufEncoder;
@@ -215,6 +255,25 @@ describe('FileStream', function() {
 
     afterEach(function() {
         fsHoraa.restore('createWriteStream');
+    });
+
+    it('is loadable by config.js', function() {
+        // Note that the stream factory string is non-standard as
+        // we're running from a testcase.  You will normally need to
+        // use something like 'heka:streams.udpStreamFactory' from
+        // your own application
+        var config = {
+            'stream': {'factory': './client:streams.fileStreamFactory',
+                       'filepath': '/tmp/some_path.txt'
+            },
+            'logger': 'test',
+            'severity': heka.SEVERITY.INFORMATIONAL
+        };
+        var jsonConfig = JSON.stringify(config);
+        var client = heka.clientFromJsonConfig(jsonConfig);
+
+        expect(client.stream.filepath).not.toBeNull();
+        expect(client.stream).not.toBeNull();
     });
 
     it('encodes messages', function() {

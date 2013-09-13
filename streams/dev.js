@@ -20,6 +20,7 @@ var StdoutStream = function(encoder, hmc) {
     this.stream = process.stdout;
     this.init(hmc);
 
+    this._is_stdout = true;
     this._send_msg = function(text) {
         this.stream.write(text);
     }
@@ -34,8 +35,8 @@ var stdoutStreamFactory = function(config) {
 };
 
 
-var FileStream = function(filePath, encoder, hmc) {
-    this.stream = fs.createWriteStream(filePath);
+var FileStream = function(filepath, encoder, hmc) {
+    this.stream = fs.createWriteStream(filepath);
     this.init(hmc);
 
     this._send_msg = function(msg_buff) {
@@ -47,11 +48,11 @@ base.abstractStream.call(FileStream.prototype)
 var fileStreamFactory = function(config) {
     var config = typeof config !== 'undefined' ? config : {};
 
-    var filePath = config['filePath'];
+    var filepath = config['filepath'];
     var encoder = config['encoder'];
     var hmc = config['hmc'];
 
-    return new FileStream(filePath, encoder, hmc);
+    return new FileStream(filepath, encoder, hmc);
 };
 
 

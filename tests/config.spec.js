@@ -17,6 +17,7 @@
 "use strict";
 
 var configModule = require('../config.js');
+var heka = require('../client.js');
 
 var m_helpers = require('../message/helpers');
 
@@ -43,6 +44,19 @@ var showLoggerProvider = function(pluginConfig) {
     return showLogger
 };
 var showLoggerProviderString = './tests/config.spec:showLoggerProvider'
+
+function block(ms) {
+    // naive cpu consuming "sleep", should never be used in real code
+    var start = new Date();
+    var now;
+    do {
+        now = new Date();
+    } while (now - start < ms);
+};
+
+var sleeper = function() {
+    block(20);
+};
 
 describe('config', function() {
 
@@ -166,11 +180,100 @@ describe('config', function() {
 
     });
 
-    it('honors disabled timer settings', function() {
-        throw "NotImplementedError";
+    it('honors disabled timer wildcards', function() {
+        var config = {
+            'stream': {'factory': makeMockStreamString},
+            'logger': 'test',
+            'severity': 5,
+            'disabledTimers': ['*'],
+        };
+        var jsonConfig = JSON.stringify(config);
+        var client = configModule.clientFromJsonConfig(jsonConfig);
+
+        expect(client.disabledTimers.length).toEqual(1);
+        expect(client.disabledTimers[0]).toEqual('*');
+
+        // wrap it
+        var name = 'disabled_timer_name';
+        var timestamp = heka.DateToNano(new Date(Date.UTC(2012,2,30)));
+        var diffSeverity = 4;
+        var wrapped_sleeper = client.timer(sleeper, name, {'timestamp': timestamp,
+                                               'severity': diffSeverity,});
+        expect(client.stream.msgs.length).toEqual(0);
+        wrapped_sleeper();
+
+        // No messages should pass through
+        expect(client.stream.msgs.length).toEqual(0);
+
     });
 
+    it('honors disabled timer lists of length 1', function() {
+        var config = {
+            'stream': {'factory': makeMockStreamString},
+            'logger': 'test',
+            'severity': 5,
+            'disabledTimers': ['some_disabled_type'],
+        };
+        var jsonConfig = JSON.stringify(config);
+        var client = configModule.clientFromJsonConfig(jsonConfig);
+        expect(client.disabledTimers.length).toEqual(1);
+        expect(client.disabledTimers[0]).toEqual('some_disabled_type');
 
+        var name = 'some_disabled_type';
+        var timestamp = heka.DateToNano(new Date(Date.UTC(2012,2,30)));
+        var diffSeverity = 4;
+        var wrapped_sleeper = client.timer(sleeper, name, {'timestamp': timestamp,
+                                               'severity': diffSeverity,});
+        expect(client.stream.msgs.length).toEqual(0);
+        wrapped_sleeper();
+        expect(client.stream.msgs.length).toEqual(0);
+
+        var name = 'not_a_disabled_type';
+        var wrapped_sleeper = client.timer(sleeper, name, {'timestamp': timestamp,
+                                               'severity': diffSeverity,});
+
+        wrapped_sleeper();
+        expect(client.stream.msgs.length).toEqual(1);
+
+    });
+
+    it('honors disabled timer lists', function() {
+        var config = {
+            'stream': {'factory': makeMockStreamString},
+            'logger': 'test',
+            'severity': 5,
+            'disabledTimers': ['some_disabled_type', 'some_other_disabled_type'],
+        };
+        var jsonConfig = JSON.stringify(config);
+        var client = configModule.clientFromJsonConfig(jsonConfig);
+        expect(client.disabledTimers.length).toEqual(2);
+        expect(client.disabledTimers[0]).toEqual('some_disabled_type');
+        expect(client.disabledTimers[1]).toEqual('some_other_disabled_type');
+
+        var name = 'some_disabled_type';
+        var timestamp = heka.DateToNano(new Date(Date.UTC(2012,2,30)));
+        var diffSeverity = 4;
+        var wrapped_sleeper = client.timer(sleeper, name, {'timestamp': timestamp,
+                                               'severity': diffSeverity,});
+        expect(client.stream.msgs.length).toEqual(0);
+        wrapped_sleeper();
+        expect(client.stream.msgs.length).toEqual(0);
+
+        var name = 'some_other_disabled_type';
+        var wrapped_sleeper = client.timer(sleeper, name, {'timestamp': timestamp,
+                                               'severity': diffSeverity,});
+
+        wrapped_sleeper();
+        expect(client.stream.msgs.length).toEqual(0);
+
+        var name = 'not_a_disabled_type';
+        var wrapped_sleeper = client.timer(sleeper, name, {'timestamp': timestamp,
+                                               'severity': diffSeverity,});
+
+        wrapped_sleeper();
+        expect(client.stream.msgs.length).toEqual(1);
+
+    });
 });
 
 exports.payloadIsFilterProvider = payloadIsFilterProvider;

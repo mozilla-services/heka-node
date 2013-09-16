@@ -366,19 +366,22 @@ describe('client', function() {
     });
 
     it("provides simple oldstyle logging methods", function() {
-        var msg_pairs = [[client.debug, "debug_msg"],
-        [client.info, "info_msg"],
-        [client.warn, "warn_msg"],
-        [client.error, "err_msg"],
-        [client.exception, "exc_msg"],
-        [client.critical, "crit_msg"]]
+        var msg_pairs = [[client.debug, "debug_msg", heka.SEVERITY.DEBUG],
+        [client.info, "info_msg", heka.SEVERITY.INFORMATIONAL],
+        [client.warn, "warn_msg", heka.SEVERITY.WARNING],
+        [client.notice, "not_msg", heka.SEVERITY.NOTICE],
+        [client.error, "err_msg", heka.SEVERITY.ERROR],
+        [client.exception, "exc_msg", heka.SEVERITY.ALERT],
+        [client.critical, "crit_msg", heka.SEVERITY.CRITICAL]]
 
         _.each(msg_pairs, function(elem) {
             var method = elem[0];
             var data = elem[1];
+            var severity = elem[2];
             method.call(client, data)
             var msg = msg_from_stream(client.stream);
             expect(msg.payload).toEqual(data);
+            expect(msg.severity).toEqual(severity);
         });
 
         expect(client.stream.msgs.length).toEqual(0);

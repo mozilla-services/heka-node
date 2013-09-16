@@ -28,7 +28,7 @@ var showLoggerProvider = function(pluginConfig) {
 };
 var showLoggerProviderString = './tests/plugins.spec.js:showLoggerProvider'
 
-describe("CEF plugin", function() {
+describe("showLoggerProvider plugin", function() {
     it("is loadable", function() {
         var customLabel = 'LOGGER, YO';
         var config = {

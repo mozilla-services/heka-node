@@ -174,12 +174,32 @@ Filters can be used to suppress the client from emitting messages
 which match specific criteria.  We currently provide the following
 filters :
 
-  * typeBlacklistProvider
-  * typeWhitelistProvider
-  * typeSeverityMaxProvider
+typeBlacklistProvider
+    Suppress any messages where the `type` attribute matches one of the `types`
+    in the provider.
 
-TODO: filter code is horribly out of date and the tests are false
-positive passes.
+    Sample Configuration ::
+        var config = {'types': {'foo': {'severity': 3}}};
+
+typeWhitelistProvider
+    Only allow messages to pass through where the `type` matches one
+    of the `types` in the provider.
+
+severityMaxProvider
+    Only allow message to pass through if the severity of the message
+    is strictly greater than the `severity` in the provider.
+
+typeSeverityMaxProvider
+    Given a dictionary of type to severity, only allow message to pass
+    through for a given type if the severity of the message is
+    strictly greater than the one specified in the configuration.
+
+    For messages where the `type` is not specified, allow the message
+    through regardless of the severity.
+
+Example usage for each of these filter is available in the
+filters.spec.js testsuite
+
 
 Disabling Timers
 ================
@@ -190,26 +210,40 @@ argument.  Passing in a list of names, or a wildcard ('*') will
 disable any timer calls where the timer name matches at least one of
 the disabled timer names.
 
-TODO: disabled timer code is not tested in config.spec.js
+The configuration expects either a list  of message `type` names which 
+match timer messages that will be excluded.  You can also use a
+wildcard `*` to disable all timer code.
 
-  Sample configuration ::
-    TODO:
+Example configuration ::
+
+    var config = {
+        'stream': {'factory': 'heka/streams:debugStreamFactory'},
+        'logger': 'test',
+        'severity': 5,
+        'disabledTimers': ['some_disabled_type'],
+    };
+    var jsonConfig = JSON.stringify(config);
+    var client = configModule.clientFromJsonConfig(jsonConfig);
 
 
 Plugins
 =======
 
-TODO add documentation on writing extensions
+Plugins can be bound to the heka-node client using the `plugins` key
+of the configuration dictionary.  You must provide at least a `provider` key
+which will be resolved into a factory function to bind a new method
+onto the heka-node client. Any additional key/value pairs in the
+plugin configuration are passed into the factory function to configure
+the plugin.
+
+Example configuration ::
 
     var config = {
-        'stream': {'factory': 'heka/streams:stdoutStreamFactory'},
+        'stream': {'factory': 'heka/streams:debugStreamFactory'},
         'logger': 'test',
-        'severity': heka.SEVERITY.INFORMATIONAL,
-        'disabledTimers': ['disabled_timer_name'],
-        'filters': [['./example/config_imports:payloadIsFilterProvider', 
-                     {'payload': 'nay!'}]],
-        'plugins': {'showLogger': {'provider': './example/config_imports:showLoggerProvider',
-                                    'label': 'your-plugin-label'}}
+        'severity': 5,
+        'plugins': {'showLogger': {'provider': './tests/plugins.spec.js:showLoggerProvider',
+                                   'label': 'some_custom_label'}}
     };
     var jsonConfig = JSON.stringify(config);
-    var client = heka.clientFromJsonConfig(jsonConfig);
+    var client = configModule.clientFromJsonConfig(jsonConfig);

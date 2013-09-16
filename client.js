@@ -213,6 +213,7 @@ HekaClient.prototype.timer = function(fn, name, opts) {
 HekaClient.prototype._oldstyle = function(severity, msg, opts) {
     if (opts === undefined) opts = {};
     if (opts.fields === undefined) opts.fields = {};
+    opts.severity = opts.severity || severity;
     opts.payload = String(msg);
     this.heka('oldstyle', opts);
 }
@@ -227,6 +228,10 @@ HekaClient.prototype.info = function(msg, opts) {
 
 HekaClient.prototype.warn = function(msg, opts) {
     this._oldstyle(SEVERITY.WARNING, msg, opts);
+}
+
+HekaClient.prototype.notice = function(msg, opts) {
+    this._oldstyle(SEVERITY.NOTICE, msg, opts);
 }
 
 HekaClient.prototype.error = function(msg, opts) {

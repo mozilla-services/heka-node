@@ -15,8 +15,8 @@
  */
 "use strict";
 
-var message = require("../message");
-var Field = message.Field;
+var message = require("./index.js");
+var ByteBuffer = require('bytebuffer');
 
 var push_value = function(is_array, f_value, v, v0) {
     if (is_array) {
@@ -33,7 +33,7 @@ var dict_to_fields = function (field_dict, prefix)  {
     for (var k in field_dict) {
         var v = field_dict[k];
         var v0 = null;
-        var f = new Field();
+        var f = new message.Field();
 
         var full_name = null;
 
@@ -55,24 +55,24 @@ var dict_to_fields = function (field_dict, prefix)  {
         }
 
         if (isInt(v0)) {
-            f.value_type = Field.ValueType.INTEGER;
+            f.value_type = message.Field.ValueType.INTEGER;
             push_value(is_array, f.value_integer, v, v0);
             results.push(f);
             continue;
         } else if (isFloat(v0)) {
-            f.value_type = Field.ValueType.DOUBLE;
+            f.value_type = message.Field.ValueType.DOUBLE;
             push_value(is_array, f.value_double, v, v0);
             results.push(f);
             continue;
         } else if (typeof v0 === 'string') {
-            f.value_type = Field.ValueType.STRING;
+            f.value_type = message.Field.ValueType.STRING;
             push_value(is_array, f.value_string, v, v0);
             results.push(f);
             continue;
         } else if (typeof v0 === 'object') {
             dict_to_fields(v0, prefix=full_name);
         } else {
-            f.value_type = Field.ValueType.BOOL;
+            f.value_type = message.Field.ValueType.BOOL;
             push_value(is_array, f.value_bool, v, v0);
             results.push(f);
             continue;
@@ -102,5 +102,45 @@ function toArrayBuffer(buffer) {
     return ab;
 }
 
+// Convert from ArrayBuffer to Node.js Buffer
+function toBuffer(ab) {
+    var buffer = new Buffer(ab.byteLength);
+    var view = new Uint8Array(ab);
+    for (var i = 0; i < buffer.length; ++i) {
+        buffer[i] = view[i];
+    }
+    return buffer;
+}
+
+function decode_message(bytes_buffer) {
+    /*
+     * Decode theheader and message object
+     */
+    var header_len = bytes_buffer[1];
+    var header_bytes_buffer = bytes_buffer.slice(2,2+header_len);
+
+    //  Now double check the header
+    var header_bb = ByteBuffer.wrap(header_bytes_buffer);
+    var header = message.Header.decode(header_bb);
+    var msg = message.Message.decode(ByteBuffer.wrap(bytes_buffer.slice(header_len+3)));
+    return {'header': header, 'message': msg};
+}
+
+function compute_hex(array_buff) {
+    var hex_values = [];
+    for (var i = 0; i < array_buff.byteLength; i++) {
+        var hex_val = Number(array_buff[i]).toString(16);
+        if (hex_val.length < 2) {
+            hex_val = '0' + hex_val;
+        }
+        hex_values = hex_values.concat(hex_val);
+    }
+    return hex_values.join(":");
+}
+
+
 exports.toArrayBuffer = toArrayBuffer;
+exports.toBuffer = toBuffer;
 exports.dict_to_fields = dict_to_fields;
+exports.decode_message = decode_message;
+exports.compute_hex = compute_hex;

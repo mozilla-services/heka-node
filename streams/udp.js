@@ -19,8 +19,8 @@
 var _ = require('underscore');
 var base = require('./base');
 
-var UdpSender = function(host, port, encoder, hmc) {
-    this.init(encoder, hmc);
+var UdpStream = function(host, port, hmc) {
+    this.init(hmc);
 
     if (!Array.isArray(host))
     {
@@ -53,6 +53,8 @@ var UdpSender = function(host, port, encoder, hmc) {
         _.each(this._destination, function(elem) {
             var host = elem[0];
             var port = elem[1];
+            // datagram sockets expect to write a Node.js Buffer
+            // object
             client.send(buffer, 0, buffer.length, port, host, function(err, bytes) {
                 client.close();
             });
@@ -61,32 +63,32 @@ var UdpSender = function(host, port, encoder, hmc) {
 
     this.toString = function()
     {
-        var result = "UdpSender ---\n";
+        var result = "UdpStream ---\n";
         _.each(this._destination, function(elem) {
             var host = elem[0];
             var port = elem[1];
             result += "Destination : "+host+":"+port+"\n";
         });
-        result += "---UdpSender \n";
+        result += "---UdpStream \n";
         return result;
     };
 
 };
-base.abstractSender.call(UdpSender.prototype);
+base.abstractStream.call(UdpStream.prototype);
 
 
-var udpSenderFactory = function(sender_config) {
+var udpStreamFactory = function(sender_config) {
     var hosts = sender_config['hosts'];
     var ports = sender_config['ports'];
-    var encoder = sender_config['encoder'];
+    // var encoder = sender_config['encoder'];
     var hmc = sender_config['hmc'];
 
     if ((hosts == null) || (ports == null)) {
         throw new Error("Invalid host/port combination: ["+hosts+"] ["+ports+"]");
     }
 
-    var sender = new UdpSender(hosts, ports, encoder, hmc);
+    var sender = new UdpStream(hosts, ports, hmc);
     return sender;
 };
 
-exports.udpSenderFactory = udpSenderFactory;
+exports.udpStreamFactory = udpStreamFactory;

@@ -17,7 +17,7 @@
 var dev = require('./dev.js');
 var udp = require('./udp.js');
 
-exports.debugSenderFactory = dev.debugSenderFactory;
-exports.fileSenderFactory = dev.fileSenderFactory;
-exports.stdoutSenderFactory = dev.stdoutSenderFactory;
-exports.udpSenderFactory = udp.udpSenderFactory;
+exports.debugStreamFactory = dev.debugStreamFactory;
+exports.fileStreamFactory = dev.fileStreamFactory;
+exports.stdoutStreamFactory = dev.stdoutStreamFactory;
+exports.udpStreamFactory = udp.udpStreamFactory;

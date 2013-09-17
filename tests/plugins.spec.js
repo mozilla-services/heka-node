@@ -16,29 +16,8 @@
 "use strict";
 
 
-var _ = require('underscore');
-var heka = require('../client.js');
 var configModule = require('../config.js');
-
-var mockSender = {
-    foo: 'bar',
-    msgs: [],
-    sendMessage: function(msg) {
-        this.msgs.push(msg);
-    },
-    reset: function() {
-        this.foo = 'bar';
-        this.msgs = [];
-    }
-};
-
-var makeMockSender = function(senderConfig) {
-    if (typeof(senderConfig.foo) !== 'undefined') {
-        mockSender.foo = senderConfig.foo;
-    };
-    return mockSender;
-};
-var makeMockSenderString = './tests/plugins.spec.js:makeMockSender';
+var makeMockStreamString = './streams:debugStreamFactory';
 
 var showLoggerProvider = function(pluginConfig) {
     var label = pluginConfig.label !== undefined ? pluginConfig.label : 'logger';
@@ -49,11 +28,11 @@ var showLoggerProvider = function(pluginConfig) {
 };
 var showLoggerProviderString = './tests/plugins.spec.js:showLoggerProvider'
 
-describe("CEF plugin", function() {
+describe("showLoggerProvider plugin", function() {
     it("is loadable", function() {
         var customLabel = 'LOGGER, YO';
         var config = {
-            'sender': {'factory': makeMockSenderString},
+            'stream': {'factory': makeMockStreamString},
             'logger': 'test',
             'plugins': {'showLogger': {'provider': showLoggerProviderString,
                                        'label': customLabel}}
@@ -65,5 +44,4 @@ describe("CEF plugin", function() {
     });
 });
 
-exports.makeMockSender = makeMockSender
 exports.showLoggerProvider = showLoggerProvider

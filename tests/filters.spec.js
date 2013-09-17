@@ -16,7 +16,8 @@
 "use strict";
 
 var filters = require('../filters.js');
-
+var configModule = require('../config.js');
+var Message = require('../message').Message;
 
 var countTrues = function(filter, msgs) {
     var trues = 0;
@@ -29,16 +30,78 @@ var countTrues = function(filter, msgs) {
 };
 
 
+var makeMockStreamString = './streams:debugStreamFactory';
+
+describe('typeSeverityMax filter', function() {
+
+    var msgs = [new Message({'type': 'foo', 'severity': 0}),
+                new Message({'type': 'foo', 'severity': 6}),
+                new Message({'type': 'bar', 'severity': 0}),
+                new Message({'type': 'bar', 'severity': 6})];
+
+    var typeSeverityMaxProvider = './filters:typeSeverityMaxProvider';
+
+    var filterConfig = {'types': {'foo': {'severity': 3}}};
+    var config = {
+        'stream': {'factory': makeMockStreamString},
+        'logger': 'test',
+        'severity': 5,
+        'filters': [[typeSeverityMaxProvider, filterConfig]]
+    };
+
+    it('allows (foo and severity > 3) | (any bar message)', function() {
+        var jsonConfig = JSON.stringify(config);
+        var client = configModule.clientFromJsonConfig(jsonConfig);
+        var typeSeverityMax = client.filters[0];
+
+        var trues = countTrues(typeSeverityMax, msgs);
+        expect(trues).toEqual(3);
+    });
+
+    it('allows (foo and severity > 3) | (bar and severity > 3)', function() {
+        filterConfig['types']['bar'] = {'severity': 3};
+        config = {
+            'stream': {'factory': makeMockStreamString},
+            'logger': 'test',
+            'severity': 5,
+            'filters': [[typeSeverityMaxProvider, filterConfig]]
+        };
+        var jsonConfig = JSON.stringify(config);
+        var client = configModule.clientFromJsonConfig(jsonConfig);
+        var typeSeverityMax = client.filters[0];
+
+        var trues = countTrues(typeSeverityMax, msgs);
+        expect(trues).toEqual(2);
+    });
+});
+
 describe('severityMax filter', function() {
 
-    var msgs = [{'severity': 0}, {'severity': 1}, {'severity': 2},
-                {'severity': 3}, {'severity': 4}, {'severity': 5},
-                {'severity': 6}, {'severity': 7}];
+    var msgs = [new Message({'severity': 0}),
+                new Message({'severity': 1}),
+                new Message({'severity': 2}),
+                new Message({'severity': 3}),
+                new Message({'severity': 4}),
+                new Message({'severity': 5}),
+                new Message({'severity': 6}),
+                new Message({'severity': 7})];
+
 
     it('filters correctly', function() {
+
         for (var i=0; i<msgs.length; i++) {
-            var config = {'severity': i};
-            var severityMax = filters.severityMaxProvider(config);
+            var severityMaxProvider = './filters:severityMaxProvider';
+            var filterConfig = {'severity': i};
+            var config = {
+                'stream': {'factory': makeMockStreamString},
+                'logger': 'test',
+                'severity': 5,
+                'filters': [[severityMaxProvider, filterConfig]]
+            };
+            var jsonConfig = JSON.stringify(config);
+            var client = configModule.clientFromJsonConfig(jsonConfig);
+            var severityMax = client.filters[0];
+
             for (var j=0; j<msgs.length; j++) {
                 var passed = severityMax(msgs[j]);
                 if (j > i) {
@@ -49,61 +112,90 @@ describe('severityMax filter', function() {
             };
         };
     });
-
 });
 
 
 describe('typeBlacklist filter', function() {
+    var msgs = [new Message({'type': 'foo'}),
+                new Message({'type': 'bar'}),
+                new Message({'type': 'baz'}),
+                new Message({'type': 'bawlp'})];
 
-    var msgs = [{'type': 'foo'}, {'type': 'bar'}, {'type': 'baz'},
-                {'type': 'bawlp'}];
+    var typeBlacklistProvider = './filters:typeBlacklistProvider';
+    it('filters foo messages out', function() {
+        var filterConfig = {'types': {'foo': 0}};
+        var config = {
+            'stream': {'factory': makeMockStreamString},
+            'logger': 'test',
+            'severity': 5,
+            'filters': [[typeBlacklistProvider, filterConfig]]
+        };
+        var jsonConfig = JSON.stringify(config);
+        var client = configModule.clientFromJsonConfig(jsonConfig);
+        var typeBlacklist = client.filters[0];
 
-    it('filters correctly', function() {
-        var config = {'types': {'foo': 0}};
-        var typeBlacklist = filters.typeBlacklistProvider(config);
         var trues = countTrues(typeBlacklist, msgs);
         expect(trues).toEqual(3);
+    });
 
-        config = {'types': {'foo': 0, 'bar': 0, 'baz': 0}};
-        typeBlacklist = filters.typeBlacklistProvider(config);
-        trues = countTrues(typeBlacklist, msgs);
+    it('filters foo, bar and baz  messages out', function() {
+        var filterConfig = {'types': {'foo': 0, 'bar': 0, 'baz': 0}};
+        var config = {
+            'stream': {'factory': makeMockStreamString},
+            'logger': 'test',
+            'severity': 5,
+            'filters': [[typeBlacklistProvider, filterConfig]]
+        };
+        var jsonConfig = JSON.stringify(config);
+        var client = configModule.clientFromJsonConfig(jsonConfig);
+        var typeBlacklist = client.filters[0];
+
+        var trues = countTrues(typeBlacklist, msgs);
         expect(trues).toEqual(1);
     });
 });
-
 
 describe('typeWhitelist filter', function() {
 
-    var msgs = [{'type': 'foo'}, {'type': 'bar'}, {'type': 'baz'},
-                {'type': 'bawlp'}];
+    var msgs = [new Message({'type': 'foo'}),
+                new Message({'type': 'bar'}),
+                new Message({'type': 'baz'}),
+                new Message({'type': 'bawlp'})];
 
-    it('filters correctly', function() {
-        var config = {'types': {'foo': 0}};
-        var typeWhitelist = filters.typeWhitelistProvider(config);
+    var typeWhitelistProvider = './filters:typeWhitelistProvider';
+
+    it('allows only foo messages', function() {
+        var filterConfig = {'types': {'foo': 0}};
+
+        var config = {
+            'stream': {'factory': makeMockStreamString},
+            'logger': 'test',
+            'severity': 5,
+            'filters': [[typeWhitelistProvider, filterConfig]]
+        };
+        var jsonConfig = JSON.stringify(config);
+        var client = configModule.clientFromJsonConfig(jsonConfig);
+        var typeWhitelist = client.filters[0];
+
         var trues = countTrues(typeWhitelist, msgs);
         expect(trues).toEqual(1);
+    });
 
-        config = {'types': {'foo': 0, 'bar': 0, 'baz': 0}};
-        typeWhitelist = filters.typeWhitelistProvider(config);
-        trues = countTrues(typeWhitelist, msgs);
+    it('allows foo, bar and baz messages', function() {
+        var filterConfig = {'types': {'foo': 0, 'bar': 0, 'baz': 0}};
+        var config = {
+            'stream': {'factory': makeMockStreamString},
+            'logger': 'test',
+            'severity': 5,
+            'filters': [[typeWhitelistProvider, filterConfig]]
+        };
+        var jsonConfig = JSON.stringify(config);
+        var client = configModule.clientFromJsonConfig(jsonConfig);
+        var typeWhitelist = client.filters[0];
+
+        var trues = countTrues(typeWhitelist, msgs);
         expect(trues).toEqual(3);
     });
 });
 
 
-describe('typeSeverityMax filter', function() {
-
-    var msgs = [{'type': 'foo', 'severity': 0}, {'type': 'foo', 'severity': 6},
-                {'type': 'bar', 'severity': 0}, {'type': 'bar', 'severity': 6}];
-
-    if('filters correctly', function() {
-        var config = {'types': {'foo': {'severity': 3}}};
-        var typeSeverityMax = filters.typeSeverityMaxProvider(config);
-        var trues = countTrues(typeSeverityMax, msgs);
-        expect(trues).toEqual(3);
-
-        config['types']['bar'] = {'severity': 3};
-        trues = countTrues(typeSeverityMax, msgs);
-        expect(trues).toEqual(2);
-    });
-});

@@ -20,32 +20,62 @@ var sys = require('util');
 var os = require('os');
 var heka = require('../client.js');
 
+var resolver = require('../resolver');
+var resolveName = resolver.resolveName;
+
+
 var helpers = require('../message/helpers');
-var dict_to_fields = helpers.dict_to_fields;
+
+var path = require('path');
+var Long = require('long');
+
+module.paths.push(path.resolve('..'))
 
 describe('client', function() {
-    var mockSender = {
-        sent: 0,
-        msgs: [],
-        sendMessage: function(msg) {
-            this.sent += 1;
-            this.msgs.push(msg);
-        }
-    };
+    function makeMockStream() {
+        var makeMockStreamString = './streams:debugStreamFactory';
+        var streamFactory = resolveName(makeMockStreamString);
+        return streamFactory({});
+    }
+    var mockStream = null;
 
     var loggerVal = 'bogus';
     var client;
-    var dateToNano = heka.DateToNano;
 
     beforeEach(function() {
-        mockSender.sent = 0;
-        mockSender.msgs = [];
-        client = new heka.HekaClient(mockSender,
+        // Blow away the mockstream and recreate it
+        mockStream = makeMockStream();
+
+        client = new heka.HekaClient(mockStream,
             loggerVal,
             heka.SEVERITY.INFORMATIONAL,
             ['disabled_timer_name']
             );
+
     });
+
+    function msg_from_stream(stream) {
+        var wire_buff = stream.msgs.pop();
+        var decoded = helpers.decode_message(wire_buff);
+        var header = decoded['header'];
+        var msg = decoded['message'];
+        return msg;
+    }
+
+    function check_simple_field(msg, name) {
+        if (name == undefined) {
+            expect(msg.fields.length).toEqual(0);
+            return
+        }
+
+        var name_field = msg.fields[0];
+        var rate_field = msg.fields[1];
+        expect(name_field.value_string[0]).toEqual(name);
+        // ** Note that the rate is defined as an int64 which requires
+        // Long.js
+        var int_val = rate_field.value_integer[0];
+        expect(int_val.toNumber()).toEqual(1);
+    }
 
     function block(ms) {
         // naive cpu consuming "sleep", should never be used in real code
@@ -64,7 +94,7 @@ describe('client', function() {
     };
 
     it('initializes correctly', function() {
-        expect(client.sender).toBe(mockSender);
+        expect(client.stream).toEqual(mockStream);
         expect(client.logger).toEqual(loggerVal);
         expect(client.severity).toEqual(6);
     });
@@ -72,91 +102,118 @@ describe('client', function() {
     it('initializes w alternate defaults', function() {
         var otherLoggerVal = 'sugob';
         var otherSeverity = 3;
-        var otherClient = new heka.HekaClient(mockSender, otherLoggerVal, otherSeverity);
-        expect(otherClient.sender).toBe(mockSender);
+        var otherClient = new heka.HekaClient(mockStream, otherLoggerVal, otherSeverity);
+        expect(otherClient.stream).toBe(mockStream);
         expect(otherClient.logger).toEqual(otherLoggerVal);
         expect(otherClient.severity).toEqual(otherSeverity);
     });
 
-    it('delivers to sender', function() {
-        var timestamp = new Date();
+    it('delivers to stream', function() {
+        var timestamp = heka.DateToNano(new Date(Date.UTC(2012,2,30)));
         var type = 'vanilla'
         var payload = 'drippy dreamy icy creamy';
         client.heka(type, {'timestamp': timestamp,
                              'payload': payload});
-        expect(mockSender.sent).toEqual(1);
-        var msg = mockSender.msgs[mockSender.msgs.length - 1];
+        expect(mockStream.msgs.length).toEqual(1);
+        var wire_buff = mockStream.msgs.pop();
+        var decoded = helpers.decode_message(wire_buff);
+        var header = decoded['header'];
+        var msg = decoded['message'];
         expect(msg.type).toEqual(type);
-        expect(msg.timestamp).toEqual(dateToNano(timestamp));
+        
+        // Timestamps in nanoseconds requires
+        // int64 precision which needs to explicitly use the Long
+        // library or else you're going to have pain
+        expect(msg.timestamp.toString()).toEqual(Long.fromNumber(timestamp).toString());
+
         expect(msg.logger).toEqual(loggerVal);
         expect(msg.pid).toEqual(process.pid);
         expect(msg.hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(6);
         expect(msg.payload).toEqual(payload);
-        expect(msg.fields).toEqual(dict_to_fields({}));
+
+        check_simple_field(msg);
     });
 
     it('sends incr message', function() {
-        var timestamp = new Date();
+        var timestamp = heka.DateToNano(new Date(Date.UTC(2012,2,30)));
         var name = 'counter name';
         client.incr(name, {'timestamp': timestamp});
-        expect(mockSender.sent).toEqual(1)
-        var msg = mockSender.msgs[mockSender.msgs.length - 1];
+        expect(mockStream.msgs.length).toEqual(1)
+
+        var wire_buff = mockStream.msgs.pop();
+        var decoded = helpers.decode_message(wire_buff);
+        var header = decoded['header'];
+        var msg = decoded['message'];
+
         expect(msg.type).toEqual('counter');
-        expect(msg.timestamp).toEqual(dateToNano(timestamp));
+
+        expect(msg.timestamp.toNumber()).toEqual(timestamp);
+
         expect(msg.logger).toEqual(loggerVal);
         expect(msg.pid).toEqual(process.pid);
         expect(msg.hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(6);
-        expect(msg.fields).toEqual(dict_to_fields({'name': name, 'rate': 1.0}));
+       
+        check_simple_field(msg, name);
+
         expect(msg.payload).toEqual('1');
     });
 
     it('formats nanosecond dates properly', function() {
-        var timestamp = new Date(Date.UTC(2013,0,1,2,3,4,50));
-        expect(dateToNano(timestamp)).toEqual(1357005784050000000);
+        // These 3 are all equivalent timestamps
+        var mydate = new Date(Date.UTC(2012,2,30));
+        var num_ts_as_ns =  1333065600000000000;
+        var str_ts_as_ns = '1333065600000000000';
+
+        expect(heka.DateToNano(mydate)).toEqual(num_ts_as_ns);
+        expect(Long.fromString(str_ts_as_ns).toString()).toEqual(str_ts_as_ns);
+        expect(Long.fromString(str_ts_as_ns).toNumber()).toEqual(num_ts_as_ns);
     });
 
     it('sends incr different count', function() {
-        var timestamp = new Date();
+        var timestamp = heka.DateToNano(new Date(Date.UTC(2012,2,30)));
         var name = 'counter name';
         var count = 3;
         client.incr(name, {'timestamp': timestamp,
                            'count': count});
-        expect(mockSender.sent).toEqual(1)
-        var msg = mockSender.msgs[mockSender.msgs.length - 1];
+        expect(mockStream.msgs.length).toEqual(1)
+        var msg = msg_from_stream(mockStream);
         expect(msg.type).toEqual('counter');
-        expect(msg.timestamp).toEqual(dateToNano(timestamp));
+        expect(msg.timestamp.toNumber()).toEqual(timestamp);
         expect(msg.logger).toEqual(loggerVal);
         expect(msg.pid).toEqual(process.pid);
         expect(msg.hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(6);
-        expect(msg.fields).toEqual(dict_to_fields({'name': name, 'rate': 1.0}));
+
+        check_simple_field(msg, name);
+
         expect(msg.payload).toEqual('3');
     });
 
     it('sends timed message', function() {
-        var timestamp = new Date();
+        var timestamp = heka.DateToNano(new Date(Date.UTC(2012,2,30)));
         var name = 'timed name';
         var elapsed = 35;
         var diffLogger = 'different'
         client.timer_send(elapsed, name, {'timestamp': timestamp,
                                      'logger': diffLogger});
-        expect(mockSender.sent).toEqual(1);
-        var msg = mockSender.msgs[mockSender.msgs.length - 1];
+
+        expect(mockStream.msgs.length).toEqual(1);
+        var msg = msg_from_stream(mockStream);
+
         expect(msg.type).toEqual('timer');
-        expect(msg.timestamp).toEqual(dateToNano(timestamp));
+        expect(msg.timestamp.toNumber()).toEqual(timestamp);
         expect(msg.logger).toEqual(diffLogger);
         expect(msg.pid).toEqual(process.pid);
         expect(msg.hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(6);
-        expect(msg.fields).toEqual(dict_to_fields({'name': name,
-                                    'rate': 1}));
+        check_simple_field(msg, name);
         expect(msg.payload).toEqual(String(elapsed));
     });
 
     it('honors incr rate', function() {
-        var timestamp = new Date();
+        var timestamp = heka.DateToNano(new Date(Date.UTC(2012,2,30)));
         var name = 'counter name';
 
         var rate = 0.1;
@@ -165,15 +222,14 @@ describe('client', function() {
             client.incr(name, {'timestamp': timestamp}, rate);
         }
         // this is a very weak test, w/ a small probability of failing incorrectly :(
-
         // we shouldn't get *twice* as many messages as the upper
         // limit
-        expect(mockSender.sent).toBeLessThan(repeats * rate * 2);
-        expect(mockSender.sent).toBeGreaterThan(0);
+        expect(mockStream.msgs.length).toBeLessThan(repeats * rate * 2);
+        expect(mockStream.msgs.length).toBeGreaterThan(0);
     });
 
     it('honors timer rate', function() {
-        var timestamp = new Date();
+        var timestamp = heka.DateToNano(new Date(Date.UTC(2012,2,30)));
         var name = 'timed name';
         var elapsed = 35;
         var rate = 0.1;
@@ -186,8 +242,8 @@ describe('client', function() {
 
         // we shouldn't get *twice* as many messages as the upper
         // limit
-        expect(mockSender.sent).toBeLessThan(repeats * rate * 2);
-        expect(mockSender.sent).toBeGreaterThan(0);
+        expect(mockStream.msgs.length).toBeLessThan(repeats * rate * 2);
+        expect(mockStream.msgs.length).toBeGreaterThan(0);
     });
 
     it('can use no options with timer calls', function() {
@@ -196,14 +252,14 @@ describe('client', function() {
             block(minWait);
         };
         var name = 'decorator';
-        var timestamp = new Date();
+        var timestamp = heka.DateToNano(new Date(Date.UTC(2012,2,30)));
         var diffSeverity = 4;
         // wrap it
-        sleeper = client.timer(sleeper, name);
+        var sleep_timer = client.timer(sleeper, name);
         // call it
-        sleeper();
-        expect(mockSender.sent).toEqual(1);
-        var msg = mockSender.msgs[mockSender.msgs.length - 1];
+        sleep_timer();
+        expect(mockStream.msgs.length).toEqual(1);
+        var msg = msg_from_stream(mockStream);
         expect(msg.type).toEqual('timer');
         expect(msg.logger).toEqual(loggerVal);
         expect(msg.pid).toEqual(process.pid);
@@ -212,46 +268,44 @@ describe('client', function() {
         // Default severity
         expect(msg.severity).toEqual(heka.SEVERITY.INFORMATIONAL);
 
-        expect(msg.fields).toEqual(dict_to_fields({'name': name,
-                                    'rate': 1}));
+        check_simple_field(msg, name);
 
         var elapsed = parseInt(msg.payload);
         expect(elapsed >= minWait).toBeTruthy();
 
     });
 
-    it('decorates w timer correctly', function() {
+    it('decorates w/ timer correctly', function() {
         var minWait = 40;  // in milliseconds
         var sleeper = function() {
             block(minWait);
         };
         var name = 'decorator';
-        var timestamp = new Date();
+        var timestamp = heka.DateToNano(new Date(Date.UTC(2012,2,30)));
         var diffSeverity = 4;
         // wrap it
         sleeper = client.timer(sleeper, name, {'timestamp': timestamp,
                                                'severity': diffSeverity,});
         // call it
         sleeper();
-        expect(mockSender.sent).toEqual(1);
-        var msg = mockSender.msgs[mockSender.msgs.length - 1];
+        expect(mockStream.msgs.length).toEqual(1);
+        var msg = msg_from_stream(mockStream);
         expect(msg.type).toEqual('timer');
-        expect(msg.timestamp).toEqual(dateToNano(timestamp));
+        expect(msg.timestamp.toNumber()).toEqual(timestamp);
         expect(msg.logger).toEqual(loggerVal);
         expect(msg.pid).toEqual(process.pid);
         expect(msg.hostname).toEqual(os.hostname());
         expect(msg.severity).toEqual(diffSeverity);
-        expect(msg.fields).toEqual(dict_to_fields({'name': name,
-                                    'rate': 1}));
+        check_simple_field(msg, name)
 
         var elapsed = parseInt(msg.payload);
         expect(elapsed >= minWait).toBeTruthy();
         // call it again
         sleeper();
-        expect(mockSender.sent).toEqual(2);
-        var msg = mockSender.msgs[mockSender.msgs.length - 1];
+        expect(mockStream.msgs.length).toEqual(1);
+        var msg = msg_from_stream(mockStream);
         expect(msg.type).toEqual('timer');
-        expect(msg.timestamp).toEqual(dateToNano(timestamp));
+        expect(msg.timestamp.toNumber()).toEqual(timestamp);
         expect(msg.logger).toEqual(loggerVal);
         expect(msg.pid).toEqual(process.pid);
 
@@ -259,8 +313,7 @@ describe('client', function() {
 
         expect(msg.severity).toEqual(diffSeverity);
 
-        expect(msg.fields).toEqual(dict_to_fields({'name': name,
-                                    'rate': 1}));
+        check_simple_field(msg, name)
         expect(elapsed >= minWait).toBeTruthy();
     });
 
@@ -271,9 +324,14 @@ describe('client', function() {
         client.heka('baz');
         client.heka('bar');
         client.heka('bawlp');
-        expect(mockSender.sent).toEqual(2)
-        expect(mockSender.msgs[0].type).toEqual('baz');
-        expect(mockSender.msgs[1].type).toEqual('bawlp');
+        expect(mockStream.msgs.length).toEqual(2)
+
+        // Messages are popped in reverse order
+        var msg2 = msg_from_stream(mockStream)
+        var msg1 = msg_from_stream(mockStream)
+
+        expect(msg1.type).toEqual('baz');
+        expect(msg2.type).toEqual('bawlp');
     });
 
     it('supports dynamic methods', function() {
@@ -283,9 +341,11 @@ describe('client', function() {
         client.addMethod('sendFoo', sendFoo);
         expect(client._dynamicMethods).toEqual({'sendFoo': sendFoo});
         client.sendFoo('bar');
-        expect(mockSender.sent).toEqual(1);
-        expect(mockSender.msgs[0].type).toEqual('foo');
-        expect(mockSender.msgs[0].payload).toEqual('FOO: bar');
+        expect(mockStream.msgs.length).toEqual(1);
+
+        var msg = msg_from_stream(mockStream)
+        expect(msg.type).toEqual('foo');
+        expect(msg.payload).toEqual('FOO: bar');
     });
 
     it('overrides properties correctly', function() {
@@ -298,9 +358,11 @@ describe('client', function() {
 
         client.addMethod('incr', sendFoo, true);
         client.incr('bar');
-        expect(mockSender.sent).toEqual(1);
-        expect(mockSender.msgs[0].type).toEqual('foo');
-        expect(mockSender.msgs[0].payload).toEqual('FOO: bar');
+        expect(mockStream.msgs.length).toEqual(1);
+        var msg = msg_from_stream(mockStream)
+
+        expect(msg.type).toEqual('foo');
+        expect(msg.payload).toEqual('FOO: bar');
     });
 
     it("provides simple oldstyle logging methods", function() {
@@ -317,10 +379,12 @@ describe('client', function() {
             var data = elem[1];
             var severity = elem[2];
             method.call(client, data)
-            expect(_.last(client.sender.msgs).payload).toEqual(data);
-            expect(_.last(client.sender.msgs).severity).toEqual(severity);
+            var msg = msg_from_stream(client.stream);
+            expect(msg.payload).toEqual(data);
+            expect(msg.severity).toEqual(severity);
         });
-        expect(client.sender.msgs.length).toEqual(msg_pairs.length);
+
+        expect(client.stream.msgs.length).toEqual(0);
     });
 
     it('honors disabledTimers', function() {
@@ -329,18 +393,19 @@ describe('client', function() {
             block(minWait);
         };
         var name = 'disabled_timer_name';
-        var timestamp = new Date();
+        var timestamp = heka.DateToNano(new Date(Date.UTC(2012,2,30)));
         var diffSeverity = 4;
+
         // wrap it
         sleeper = client.timer(sleeper, name, {'timestamp': timestamp,
                                                'severity': diffSeverity,});
         // call it
         sleeper();
-        expect(mockSender.sent).toEqual(0);
+        expect(mockStream.msgs.length).toEqual(0);
     });
 
     it('honors wildcard disabledTimers', function() {
-        client = new heka.HekaClient(mockSender,
+        client = new heka.HekaClient(mockStream,
             loggerVal,
             heka.SEVERITY.INFORMATIONAL,
             ['*']
@@ -350,15 +415,14 @@ describe('client', function() {
             block(minWait);
         };
         var name = 'any timer name';
-        var timestamp = new Date();
+        var timestamp = heka.DateToNano(new Date(Date.UTC(2012,2,30)));
         var diffSeverity = 4;
         // wrap it
         sleeper = client.timer(sleeper, name, {'timestamp': timestamp,
                                                'severity': diffSeverity,});
         // call it
         sleeper();
-        expect(mockSender.sent).toEqual(0);
+        expect(mockStream.msgs.length).toEqual(0);
     });
-
 
 });

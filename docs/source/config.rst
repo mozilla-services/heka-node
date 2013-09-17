@@ -17,9 +17,12 @@ may look like this ::
 
     var heka = require('heka');
     var heka_CONF = {
-        'sender': {'factory': 'heka:streams.udpSenderFactory',
+        'stream': {'factory': 'heka/streams:udpStreamFactory',
                    'hosts': ['localhost'],
-                   'ports': 5565},
+                   'ports': [5565]
+         },
+        'logger': 'test',
+        'severity': heka.SEVERITY.INFORMATIONAL
     };
     var jsonConfig = JSON.stringify(heka_CONF);
     var log_client = heka.clientFromJsonConfig(jsonConfig);
@@ -72,7 +75,7 @@ protocol buffer formatted messages to localhost on port 5565.  ::
     var config = {
         'stream': {'factory': 'heka/streams:udpStreamFactory',
                    'hosts': ['localhost'],
-                   'ports': [5565],
+                   'ports': [5565]
         },
         'logger': 'test',
         'severity': heka.SEVERITY.INFORMATIONAL

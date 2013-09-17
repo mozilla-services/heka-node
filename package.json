@@ -17,15 +17,18 @@
     "main": "./client.js",
     "files": ["protobuf/*.proto",
               "message/*.js",
-              "senders/*.js",
+              "streams/*.js",
+              "encoders/*.js",
+              "tests/*.js",
               "*.js"],
     "engines": {
         "node": ">=0.10.0"
     },
     "dependencies": {
         "bytebuffer": "1.3.6",
-        "protobufjs": ">=0.12.8",
-        "underscore": ">=1.4.2",
+        "protobufjs": ">=1.1.6",
+        "long": ">=1.1.2",
+        "underscore": ">=1.5.2",
         "superscore": ">=0.3.4"
     },
     "devDependencies": {
@@ -33,6 +36,6 @@
         "horaa": ">=0.1.1alpha"
     },
     "scripts": {
-        "test": "jasmine-node tests"
+        "test": "node_modules/jasmine-node/bin/jasmine-node --captureExceptions tests"
     }
 }

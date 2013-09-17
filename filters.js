@@ -50,6 +50,7 @@ var typeWhitelistProvider = function(config) {
 
 var typeSeverityMaxProvider = function(config) {
     var typeFilters = {};
+    var typeName = null;
     for (typeName in config.types) {
         if (config.types.hasOwnProperty(typeName)) {
             var typeConfig = config.types[typeName];
@@ -57,7 +58,7 @@ var typeSeverityMaxProvider = function(config) {
         };
     };
 
-    var typeSeveritMax = function(msg) {
+    var typeSeverityMax = function(msg) {
         var severityMax = typeFilters[msg['type']];
         if (severityMax === undefined) {
             return true;

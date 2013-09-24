@@ -17,6 +17,7 @@
 "use strict";
 
 var superscore = require('superscore');
+var ByteBuffer = require('bytebuffer');
 
 var NAMESPACE_DNS = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
 var NAMESPACE_URL = '6ba7b811-9dad-11d1-80b4-00c04fd430c8';
@@ -24,16 +25,18 @@ var NAMESPACE_OID = '6ba7b812-9dad-11d1-80b4-00c04fd430c8';
 var NAMESPACE_X500 = '6ba7b814-9dad-11d1-80b4-00c04fd430c8';
 
 /*
- * Convert a hexadecimal UUID to it's binary representation
+ * Convert a hexadecimal UUID to a bytebuffer in read-only mode.
  */
 function hex_to_bin(uuid) {
     var hex = uuid.replace(/[\-{}]/g, '');
-    var bin = '';
+    var buff_len = hex.length/2;
+    var bb = new ByteBuffer(buff_len);
     for (var i = 0; i < hex.length; i += 2)
     {   // Convert each character to a bit
-        bin += String.fromCharCode(parseInt(hex.charAt(i) + hex.charAt(i + 1), 16));
+        bb.writeUint8(parseInt(hex.charAt(i) + hex.charAt(i + 1), 16));
     }
-    return bin;
+    bb.flip();
+    return bb;
 };
 
 

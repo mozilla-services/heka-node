@@ -16,22 +16,23 @@
 "use strict";
 
 var uuid = require('../uuid');
+var ByteBuffer = require('bytebuffer');
 
 describe('uuid', function() {
     it('encodes hex to binary properly', function(){
         var actual = uuid.hex_to_bin('0a1d');
-        var expected = [0x0a, 0x1d];
-        expect(actual.length).toEqual(expected.length);
-        expect(actual).toEqual(String.fromCharCode(0x0a, 0x1d));
+        expect(actual.toHex()).toEqual("<0A 1D>");
     });
 
     it('strips out non-hex characters before conversion to binary', function(){
         var actual = uuid.hex_to_bin('ba209999-0c6c-11d2-97cf-00c04f8eea45');
-        var expected = [0xba, 0x20, 0x99, 0x99, 0x0c, 0x6c, 0x11, 0xd2, 0x97, 0xcf, 0x00, 0xc0, 0x4f, 0x8e, 0xea, 0x45];
-        expect(actual.length).toEqual(expected.length);
-
-        expect(actual).toEqual(String.fromCharCode(
-                        0xba, 0x20, 0x99, 0x99, 0x0c, 0x6c, 0x11, 0xd2, 0x97, 0xcf, 0x00, 0xc0, 0x4f, 0x8e, 0xea, 0x45
-                        ));
+        var expected = "<BA 20 99 99 0C 6C 11 D2 97 CF 00 C0 4F 8E EA 45>";
+        expect(actual.toHex()).toEqual(expected);
     });
+
+    it('writes bytebuffer correctly', function() {
+        var bb = uuid.hex_to_bin('12345678-ffaabb12-01234567-890abcde');
+        expect(bb.toHex()).toEqual("<12 34 56 78 FF AA BB 12 01 23 45 67 89 0A BC DE>");
+    });
+
 });

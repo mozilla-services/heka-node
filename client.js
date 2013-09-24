@@ -25,6 +25,7 @@ var message = require('./message');
 var helpers = require('./message/helpers');
 var Field = message.Field;
 var os = require('os');
+var ByteBuffer = require('bytebuffer');
 
 var uuid = require('./uuid');
 var compute_oid_uuid = uuid.compute_oid_uuid;
@@ -129,6 +130,7 @@ HekaClient.prototype.heka = function(type, opts) {
     msg.uuid = '0000000000000000';
 
     var msg_buffer = msg.encode().toBuffer();
+
     msg.uuid = compute_oid_uuid(msg_buffer);
 
     this._sendMessage(msg);

@@ -29,11 +29,10 @@ var _ = require('underscore');
 var restify = require('restify');
 
 var heka_CONF = {
-    'sender': {'factory': 'heka/senders:udpSenderFactory',
+    'stream': {'factory': 'heka/streams:udpStreamFactory',
                'hosts': 'localhost',
                'ports': 5565,
-                'encoder': 'heka/senders/encoders:jsonEncoder'
-                //'encoder': 'heka/senders/encoders:protobufEncoder'
+               'encoder': 'heka/senders/encoders:protobufEncoder'
     },
     'logger': 'test',
     'severity': 5
@@ -59,9 +58,10 @@ function block(ms) {
 };
 
 var echo_func = function(request, response, next) {
+    // Send incr() messages 90% of the time
+    log.incr('demo.node.incr_thing', {count:2, my_meta:42}, new heka.BoxedFloat(0.9));
     response.send(request.params);
     block(10);
-    log.incr('demo.node.incr_thing', {count:2, my_meta:42}, 0.25);
     return next();
 };
 

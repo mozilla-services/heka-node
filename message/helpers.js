@@ -54,14 +54,20 @@ var dict_to_fields = function (field_dict, prefix)  {
             v0 = v;
         }
 
-        if (isInt(v0)) {
-            f.value_type = message.Field.ValueType.INTEGER;
-            push_value(is_array, f.value_integer, v, v0);
+        if (isFloat(v0)) {
+            f.value_type = message.Field.ValueType.DOUBLE;
+
+            // We need to unbox sometimes
+            if (BoxedFloat.prototype.isPrototypeOf(v0)) {
+                push_value(is_array, f.value_double, v, v0.number);
+            } else {
+                push_value(is_array, f.value_double, v, v0);
+            }
             results.push(f);
             continue;
-        } else if (isFloat(v0)) {
-            f.value_type = message.Field.ValueType.DOUBLE;
-            push_value(is_array, f.value_double, v, v0);
+        } else if (isInt(v0)) {
+            f.value_type = message.Field.ValueType.INTEGER;
+            push_value(is_array, f.value_integer, v, v0);
             results.push(f);
             continue;
         } else if (typeof v0 === 'string') {
@@ -86,6 +92,9 @@ var isInt = function(n) {
 }
 
 var isFloat = function(n) {
+    if (BoxedFloat.prototype.isPrototypeOf(n)) {
+        return true;
+    }
     return typeof n === 'number' && n % 1 != 0;
 }
 
@@ -138,7 +147,16 @@ function compute_hex(array_buff) {
     return hex_values.join(":");
 }
 
+var BoxedFloat = function(number) {
+    this.number = number;
+}
 
+BoxedFloat.prototype.valueOf = function() {
+    return this.number;
+}
+
+
+exports.BoxedFloat = BoxedFloat;
 exports.toArrayBuffer = toArrayBuffer;
 exports.toBuffer = toBuffer;
 exports.dict_to_fields = dict_to_fields;

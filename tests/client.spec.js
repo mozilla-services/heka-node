@@ -73,8 +73,8 @@ describe('client', function() {
         expect(name_field.value_string[0]).toEqual(name);
         // ** Note that the rate is defined as an int64 which requires
         // Long.js
-        var int_val = rate_field.value_integer[0];
-        expect(int_val.toNumber()).toEqual(1);
+        var double_val = rate_field.value_double[0];
+        expect(double_val).toEqual(1.0);
     }
 
     function block(ms) {

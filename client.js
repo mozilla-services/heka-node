@@ -153,7 +153,11 @@ HekaClient.prototype.incr = function(name, opts, sample_rate) {
     if (opts === undefined) opts = {};
     if (opts.count === undefined) opts.count = 1;
     if (opts.fields === undefined) opts.fields = {};
-    if (typeof sample_rate === 'undefined') sample_rate = 1.0;
+
+    if (typeof sample_rate === 'undefined') {
+        sample_rate = new helpers.BoxedFloat(1);
+    }
+
     opts.payload = String(opts.count);
     opts.fields['name'] = name;
     opts.fields['rate'] = sample_rate;
@@ -168,7 +172,7 @@ HekaClient.prototype.incr = function(name, opts, sample_rate) {
 HekaClient.prototype.timer_send = function(elapsed, name, opts) {
     // opts = timestamp, logger, severity, fields, rate
     if (opts === undefined) opts = {};
-    if (opts.rate === undefined) opts.rate = 1;
+    if (opts.rate === undefined) opts.rate = new helpers.BoxedFloat(1);
     if (opts.rate < 1 && Math.random(1) >= opts.rate) {
         // do nothing
         return;
@@ -182,7 +186,7 @@ HekaClient.prototype.timer_send = function(elapsed, name, opts) {
 
 HekaClient.prototype.timer = function(fn, name, opts) {
     if (opts === undefined) opts = {};
-    if (opts.rate === undefined) opts.rate = 1;
+    if (opts.rate === undefined) opts.rate = new helpers.BoxedFloat(1);
 
     var NoOpTimer = function() {
         return null;

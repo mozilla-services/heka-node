@@ -3,5 +3,5 @@
 
 all:
 	npm install restify
-	npm install heka
+	npm install heka-node
 	node demo.js

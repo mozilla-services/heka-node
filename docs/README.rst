@@ -23,3 +23,6 @@ can be found in the `heka-docs
 
 You can find a pre-rendered version of that documentation on
 readthedocs.org at `heka-docs.rtfd.org <http://heka-docs.rtfd.org>`_.
+
+A pre-rendered version of the heka-node documentation can be found on
+readthedocs.org at `heka-node.rtfd.org <http://heka-node.rtfd.org>`_.

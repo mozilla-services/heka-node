@@ -1,3 +1,12 @@
+0.5.0 - Sept 24, 2013
+=====================
+
+- hekad 0.4 support including wire format change for ProtocolBuffer
+- no more JsonEncoder support
+- full ProtocolBuffer encoder support
+- sender API has been removed and is now split into encoders and
+  streams
+
 0.2.0 - May 1, 2013
 ===================
 

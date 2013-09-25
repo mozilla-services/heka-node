@@ -6,9 +6,9 @@
        {"name": "Danny Coates",
         "email": "dcoates@mozilla.com"}
     ],
-    "name": "heka",
+    "name": "heka-node",
     "description": "A node.js client for Mozilla's Heka logging server",
-    "version": "0.4.1",
+    "version": "0.5.0",
     "homepage": "https://github.com/mozilla-services/heka-node",
     "repository": {
         "type": "git",

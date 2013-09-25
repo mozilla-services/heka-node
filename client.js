@@ -23,6 +23,7 @@ var config = require('./config');
 var env_version = '0.8';
 var message = require('./message');
 var helpers = require('./message/helpers');
+var BoxedFloat = helpers.BoxedFloat;
 var Field = message.Field;
 var os = require('os');
 var ByteBuffer = require('bytebuffer');
@@ -102,7 +103,7 @@ HekaClient.prototype._sendMessage = function(msg_obj) {
 HekaClient.prototype.heka = function(type, opts) {
     if (opts === undefined) opts = {};
 
-    if (opts.timestamp === undefined) opts.timestamp = new Date();
+    if (opts.timestamp === undefined) opts.timestamp = DateToNano(new Date());
     if (opts.logger === undefined) opts.logger = this.logger;
     if (opts.severity === undefined) opts.severity = this.severity;
     if (opts.payload === undefined) opts.payload = '';
@@ -155,7 +156,7 @@ HekaClient.prototype.incr = function(name, opts, sample_rate) {
     if (opts.fields === undefined) opts.fields = {};
 
     if (typeof sample_rate === 'undefined') {
-        sample_rate = new helpers.BoxedFloat(1);
+        sample_rate = new BoxedFloat(1);
     }
 
     opts.payload = String(opts.count);
@@ -172,7 +173,7 @@ HekaClient.prototype.incr = function(name, opts, sample_rate) {
 HekaClient.prototype.timer_send = function(elapsed, name, opts) {
     // opts = timestamp, logger, severity, fields, rate
     if (opts === undefined) opts = {};
-    if (opts.rate === undefined) opts.rate = new helpers.BoxedFloat(1);
+    if (opts.rate === undefined) opts.rate = new BoxedFloat(1);
     if (opts.rate < 1 && Math.random(1) >= opts.rate) {
         // do nothing
         return;
@@ -186,7 +187,7 @@ HekaClient.prototype.timer_send = function(elapsed, name, opts) {
 
 HekaClient.prototype.timer = function(fn, name, opts) {
     if (opts === undefined) opts = {};
-    if (opts.rate === undefined) opts.rate = new helpers.BoxedFloat(1);
+    if (opts.rate === undefined) opts.rate = new BoxedFloat(1);
 
     var NoOpTimer = function() {
         return null;
@@ -259,6 +260,7 @@ HekaClient.prototype.critical = function(msg, opts) {
 
 /***************************/
 
+exports.BoxedFloat = BoxedFloat;
 exports.DateToNano = DateToNano;
 exports.HekaClient = HekaClient;
 exports.clientFromJsonConfig = config.clientFromJsonConfig;

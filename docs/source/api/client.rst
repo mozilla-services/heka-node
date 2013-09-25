@@ -39,11 +39,17 @@ Options:
 
     If the sample_rate is supplied, it must be a float from 0 to 1.0.
     heka-node will compute a random number.  If the random number is
-    greater than the sample_rate, then *no* message is delivered. 
+    greater than the sample_rate, then *no* message is delivered.
+
+    Note that because Javascript has only a single number type, you
+    will need to use the `heka.BoxedFloat` type to ensure that the
+    `sample_rate` is properly encoded into a double precision number
+    to protect against a rate of 1.0 being encoded into an integer.
 
 Example ::
 
-    log.incr('some_counter', {count: 2, my_meta: 42}, 0.25)
+    
+    log.incr('some_counter', {count: 2, my_meta: 42}, new heka.BoxedFloat(0.25))
 
 Will send a message ~25% of the time to hekad.  Each increment will
 increase the count of 'some_counter' by 2 and will also send a field
@@ -69,6 +75,11 @@ Options:
     `opts` may contain a `rate` attribute which specifies a sampling rate for timer messages.
 
     The return value of `timer` is your decorated function.
+
+    Note that because Javascript has only a single number type, you
+    will need to use the `heka.BoxedFloat` type to ensure that the
+    `rate` is properly encoded into a double precision number
+    to protect against a rate of 1.0 being encoded into an integer.
 
 Encoders
 --------

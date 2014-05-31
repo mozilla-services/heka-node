@@ -264,5 +264,6 @@ exports.BoxedFloat = BoxedFloat;
 exports.DateToNano = DateToNano;
 exports.HekaClient = HekaClient;
 exports.clientFromJsonConfig = config.clientFromJsonConfig;
+exports.createClient = config.createClient;
 exports.SEVERITY = SEVERITY;
 exports.streams = streams;

@@ -87,6 +87,32 @@ describe('config', function() {
         expect(msg.severity).toEqual(config.severity);
     });
 
+    it('sets up a client from an object as well as a string', function() {
+        var config = {
+            'stream': {'factory': makeMockStreamString},
+            'logger': 'test',
+            'severity': 5
+        };
+        var client = configModule.createClient(config);
+        expect(client.logger).toEqual(config.logger);
+        expect(client.severity).toEqual(config.severity);
+
+        var msgOpts = {'payload': 'whadidyusay?'};
+        var type = 'test-type'
+
+        client.heka(type, msgOpts);
+
+        expect(client.stream.msgs.length).toEqual(1);
+
+        var wire_buff = client.stream.msgs.pop();
+        var decoded = m_helpers.decode_message(wire_buff);
+        var header = decoded['header'];
+        var msg = decoded['message'];
+        expect(msg.type).toEqual(type);
+        expect(msg.payload).toEqual(msgOpts.payload);
+        expect(msg.severity).toEqual(config.severity);
+    });
+
     it('sets up filters', function() {
         var filterConfig = {'payload': 'nay!'};
         var config = {

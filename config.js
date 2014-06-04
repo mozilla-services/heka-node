@@ -41,8 +41,7 @@ var streamFromConfig = function(config) {
     return stream;
 };
 
-var clientFromJsonConfig = function(config, client) {
-    config = JSON.parse(config);
+var createClient = function(config, client) {
     var streamConfig = getattr(config, 'stream');
     var stream = streamFromConfig(streamConfig);
     var logger = getattr(config, 'logger', '');
@@ -77,5 +76,11 @@ var clientFromJsonConfig = function(config, client) {
     return client;
 };
 
+var clientFromJsonConfig = function(config, client) {
+    config = JSON.parse(config);
+    return createClient(config, client);
+};
+
 exports.resolveName = resolveName;
 exports.clientFromJsonConfig = clientFromJsonConfig;
+exports.createClient = createClient;

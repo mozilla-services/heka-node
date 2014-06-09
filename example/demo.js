@@ -24,15 +24,15 @@
  */
 "use strict";
 
-var heka = require('heka');
+var heka = require('heka-node');
 var _ = require('underscore');
 var restify = require('restify');
 
 var heka_CONF = {
-    'stream': {'factory': 'heka/streams:udpStreamFactory',
+    'stream': {'factory': 'heka-node/streams:udpStreamFactory',
                'hosts': 'localhost',
-               'ports': 5565,
-               'encoder': 'heka/senders/encoders:protobufEncoder'
+               'ports': 4880,
+               'encoder': 'heka-node/senders/encoders:protobufEncoder'
     },
     'logger': 'test',
     'severity': 5

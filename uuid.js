@@ -16,13 +16,14 @@
 
 "use strict";
 
-var superscore = require('superscore');
 var ByteBuffer = require('bytebuffer');
 
 var NAMESPACE_DNS = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
 var NAMESPACE_URL = '6ba7b811-9dad-11d1-80b4-00c04fd430c8';
 var NAMESPACE_OID = '6ba7b812-9dad-11d1-80b4-00c04fd430c8';
 var NAMESPACE_X500 = '6ba7b814-9dad-11d1-80b4-00c04fd430c8';
+
+var uuid_v5 = require('./superscore_uuid.js').uuid_v5;
 
 /*
  * Convert a hexadecimal UUID to a bytebuffer in read-only mode.
@@ -39,13 +40,12 @@ function hex_to_bin(uuid) {
     return bb;
 };
 
-
 /*
  * Compute a UUID based on object data
  */
 function compute_oid_uuid(data)
 {
-    return hex_to_bin(superscore.UUID.v5(data, NAMESPACE_OID));
+    return hex_to_bin(uuid_v5(data, NAMESPACE_OID));
 }
 
 exports.compute_oid_uuid = compute_oid_uuid;

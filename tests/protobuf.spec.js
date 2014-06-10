@@ -105,7 +105,13 @@ describe('ProtocolBuffer', function() {
             expect(myTest.b.array).toEqual(bb.array);
             var bb2 = new ByteBuffer(6);
             myTest.encode(bb2);
+            bb2.flip();
             expect(bb2.toHex()).toEqual("<02 04 12 34 56 78>");
+
+            bb2 = new ByteBuffer(6);
+            myTest.encode(bb2);
+            bb2.flip();
+
             myTest = Test.decode(bb2);
             expect(myTest.b.BE().readUint32()).toEqual(0x12345678);
         });
@@ -130,6 +136,7 @@ describe('ProtocolBuffer', function() {
             expect(myTest.b.array).toEqual(bb.array);
             var bb2 = new ByteBuffer(6);
             myTest.encode(bb2);
+            bb2.flip();
             expect(bb2.toHex()).toEqual("<02 04 12 34 56 78>");
             myTest = Test.decode(bb2);
             expect(myTest.b.BE().readUint32()).toEqual(0x12345678);

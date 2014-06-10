@@ -25,7 +25,6 @@ var helpers = require('./message/helpers');
 var BoxedFloat = helpers.BoxedFloat;
 var Field = message.Field;
 var os = require('os');
-var ByteBuffer = require('bytebuffer');
 
 var uuid = require('./uuid');
 var compute_oid_uuid = uuid.compute_oid_uuid;

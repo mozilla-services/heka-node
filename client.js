@@ -18,7 +18,6 @@
 
 var streams = require('./streams/index');
 var _ = require('underscore');
-var superscore = require('superscore');
 var config = require('./config');
 var env_version = '0.8';
 var message = require('./message');

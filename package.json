@@ -40,6 +40,6 @@
         "horaa": ">=0.1.1alpha"
     },
     "scripts": {
-        "test": "node_modules/jasmine-node/bin/jasmine-node --captureExceptions tests"
+        "test": "jasmine-node --captureExceptions tests"
     }
 }

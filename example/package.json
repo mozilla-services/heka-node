@@ -9,8 +9,8 @@
         "node": ">=0.10.0"
     },
     "dependencies": {
-        "heka": ">=0.2.0",
-        "restify": ">=2.5.0"
+        "heka-node": "*",
+        "restify": ">=2.8.0"
     },
     "scripts": {
         "test": "node demo.js"

@@ -1,4 +1,5 @@
 NOTE: THIS PROJECT IS DEPRECATED
+================================
 
 This project is no longer being maintained, and it is strongly recommended
 that you not use it. While the idea of a node.js client that speaks in Heka's
